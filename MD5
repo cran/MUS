@@ -1,0 +1,12 @@
+92ef6028f21f3e52cfa959f4b175d688 *DESCRIPTION
+ebc82eeabe85c8e859c9188db3f4e2b8 *NAMESPACE
+28f87c6f5f4acfa082b367640e383b15 *R/MUS.evaluation.R
+131030fc311f00ca7d307d0ab511cf7d *R/MUS.extraction.R
+1d9a0a01a4994d8b473b3f76f4bf9bf4 *R/MUS.planning.R
+b06b9215961c94e2b5c5d23133f578d1 *R/print.MUS.evaluation.result.R
+466cdf8057b5044796def504e2ae97b5 *build/partial.rdb
+8d66b1de524e389d4a5c400f05590d6f *man/MUS-package.Rd
+80a60a86dd5f76a1d99a4739ccdd3bc7 *man/MUS.evaluation.Rd
+8c60a29255dfa4a933cb81811bc64113 *man/MUS.extraction.Rd
+88f5baa485a04c1a4cc3006284fb44dc *man/MUS.planning.Rd
+e8422b46140bf162d6ca7c2c62b18502 *man/print.MUS.evaluation.result.Rd
