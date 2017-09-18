@@ -1,5 +1,6 @@
 # calculate necessary observations for a given number of wrong units, additional alpha=1-confidence level
-# this function does not work for very small account values, because the hyper-geometric distribution is discrete and uniroot-function fails in this case
+# this function does not work for very small account values, because
+# the hyper-geometric distribution is discrete and uniroot-function fails in this case
 .calculate.n.hyper <- function(num.errors, alpha, tolerable.error, account.value) {
 	# maximal error rate which would be acceptable if found in the sample
 	max.error.rate <- tolerable.error/account.value
@@ -8,16 +9,53 @@
 	calculate.deviance <- function (n.stichprobe) {
 		phyper(q=num.errors, m=round(max.error.rate*account.value), n=correct.mu, k=n.stichprobe)-alpha
 	}
-	
+
 	# number of correct monetary units in the population
 	correct.mu <- round((1-max.error.rate)*account.value)
 
 	# search the zero point on the deviance and return the ceiled value
-	return(ceiling(uniroot(f=calculate.deviance, interval=c(0, min(correct.mu+num.errors, account.value)))$root)) # maximal possible sample size is the number of correct items added through the allowed errors - every sample size greater than that has to be exactly 0 because it is impossible to happen. However, if account value is larger, this is the maximal possible sampling size.
+	return(ceiling(uniroot(f=calculate.deviance, interval=c(0, min(correct.mu+num.errors, account.value)))$root))
+	# maximal possible sample size is the number of correct items added through the allowed errors
+	# - every sample size greater than that has to be exactly 0 because it is impossible to happen.
+	# However, if account value is larger, this is the maximal possible sampling size.
 }
 
+MUSFactor <- function(risk, e) {
+# calculate MUS Factor
+# Based on Technical Notes on the AICPA Audit Guide Audit Sampling, Trevor Stewart, AICPA, 2012
+  erro = -1
+  resp = erro
+  max_iter=1000
+  solved=0.000001
+  if (risk <= 0 || risk >= 1 || e < 0 || e >= 1) {
+    stop("Parameters must be between 0 and 1.")
+  } else {
+    F = qgamma(risk, 1, 1)
+    if (e == 0) {
+      resp = F
+    } else {
+      F1 = 0
+      i = 0
+      while ((abs(F1-F)>solved) && (i<=max_iter)) {
+        F1 = F
+        F = qgamma(risk, 1 + e * F1, 1)
+        i = i + 1
+      }
+      resp = ifelse((abs(F1-F)<=solved), F, erro)
+    }
+  }
+  resp
+}
 
-MUS.planning <- function(data, col.name.book.values="book.value", confidence.level=.95, tolerable.error, expected.error, n.min=0){
+calc.n.conservative <- function(conf_level, tolerable.error, expected.error, book.value) {
+# calculate n consevatively, as per AICPA audit guide
+  pct_ratio = expected.error / tolerable.error
+  conf_factor = ceiling(MUSFactor(conf_level, pct_ratio)*100)/100
+  ceiling(conf_factor / tolerable.error / book.value)
+}
+
+MUS.planning <- function(data, col.name.book.values="book.value", confidence.level=.95, tolerable.error, expected.error,
+	n.min=0, errors.as.pct=FALSE, conservative=FALSE){
 	# check parameters data and col.name.book.values
 	if (!is.data.frame(data) | is.matrix(data)) stop("Data needs to be a data frame or a matrix but it is not.")
 	if (!is.character(col.name.book.values) | length(col.name.book.values)!=1 | !is.element(col.name.book.values, names(data))) stop("The data frame requires at least a column with the book values and the name of this column has to be provided by parameter col.name.book.values (default book.value).")
@@ -29,11 +67,15 @@ MUS.planning <- function(data, col.name.book.values="book.value", confidence.lev
 
 	# calculate gross book value from dataset
 	book.value <- sum(pmax(with(data, get(col.name.book.values)), 0))
-	
+
 	# calculate number of items in the dataset
 	num.items <- length(with(data, get(col.name.book.values)))
 
 	# check other parameters
+	if (errors.as.pct && is.numeric(tolerable.error) && is.numeric(expected.error)) {
+		tolerable.error = tolerable.error * book.value;
+		expected.error = expected.error * book.value;
+	}
 	if (!is.numeric(confidence.level) | length(confidence.level)!=1 | confidence.level<=0 | confidence.level>=1) stop("Confidence level has to be a numeric value between 0 and 1 (both exclusive).")
 	if (!is.numeric(tolerable.error) | length(tolerable.error)!=1 | tolerable.error<=0) stop("Tolerable Error has to be a numeric value between 0 and book value (both exclusive).")
 	if (!is.numeric(expected.error) | length(expected.error)!=1 | expected.error<0) stop("Expected error has to be a numeric value greater or equal to 0.")
@@ -68,6 +110,11 @@ MUS.planning <- function(data, col.name.book.values="book.value", confidence.lev
 		}
 	}
 	n.final <- max(n.optimal, n.min) # take greater value of optimal n or predefined minimum sample size
+
+	if (conservative) {
+		n.final = max(n.final, calc.n.conservative(confidence.level, tolerable.error, expected.error, book.value))
+	}
+
 	interval <- book.value/n.final # calculate sampling interval
 	tol.taint <- expected.error/book.value*n.final # calculate tolerable taintings (maximal number of full overstatements that will be acceptable in the sample)
 

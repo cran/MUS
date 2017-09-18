@@ -1,0 +1,119 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: MUS 0.1.4\n"
+"POT-Creation-Date: 2017-09-14 16:28\n"
+"PO-Revision-Date: 2017-09-14 17:52\n"
+"Last-Translator: Andre Guimaraes <aguimaraes@bndes.gov.br\n"
+"Language: pt_BR\n"
+"Language-Team:  Brazilian-Portuguese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Report-Msgid-Bugs-To: https://github.com/alsguimaraes/MUS\n"
+
+msgid "extract has to be an object from type MUS.extraction.result. Use function MUS.extraction to create such an object."
+msgstr "A extração (extract) deve ser um objeto do tipo MUS.extraction.result. Use a função MUS.extraction para criar tal objeto."
+
+msgid "col.name.audit.values has to be a single character value (default book.value)."
+msgstr "A coluna de valores auditados (col.name.audit.values) deve ser do tipo caracter (default = book.value)."
+
+msgid "col.name.riskweights has to be NULL if no risk weights are used (as in ordinary MUS) or a single character value (default NULL)."
+msgstr "Os pesos (col.name.riskweights) devem ser NULL (MUS padrão) ou caracter (default NULL)."
+
+msgid "filled.sample needs to be a data frame or a matrix but it is not."
+msgstr "Amostra (filled.sample) deve ser um data frame ou matrix, mas não é."
+
+msgid "The filled.sample requires a column with the book values and the name of this column has to be provided by parameter col.name.book.values during MUS.planning (default book.value)."
+msgstr "A amostra (filled.sample) requer uma coluna com valores (book values) e o nome da coluna no parâmetro col.name.book.values (default book.value) durante o planejamento (MUS.planning)."
+
+msgid "The filled.sample requires a column with the audit values and the name of this column has to be provided by parameter col.name.audit.values (default audit.value)."
+msgstr "A amostra (filled.sample) requer uma coluna com os valores auditados e o nome da coluna no parâmetro col.name.audit.values (default audit.value)."
+
+msgid "If col.name.riskweights is not NULL, the filled.sample requires a column with the col.name.riskweights and the name of this column has to be provided by parameter col.name.riskweights (default NULL)."
+msgstr "Se col.name.riskweights não é NULL (default NULL), a amostra (filled.sample) deve ter uma coluna (indicada em col.name.riskweights) com os pesos."
+
+msgid "filled.sample must not have a column 'd' because this column name is used for internal evaluation."
+msgstr "a amostra (filled.sample) não deve ter uma coluna 'd', pois esse nome é usado internamente."
+
+msgid "filled.high.values needs to be a data frame or a matrix but it is not."
+msgstr "Os valores altos da amostra (filled.high.values) deve ser um data frame ou matriz mas não é."
+
+msgid "The filled.high.values requires a column with the book values and the name of this column has to be provided by parameter col.name.book.values during MUS.planning (default book.value)."
+msgstr "Os valores altos da amostra requerem uma coluna com os valores informados (book values) e o nome da coluna indicado no parâmetro col.name.book.values (default book.value) durante o planejamento (MUS.planning)."
+
+msgid "The filled.high.values requires a column with the audit values and the name of this column has to be provided by parameter col.name.audit.values (default audit.value)."
+msgstr "Os valores mais altos requerem uma coluna com valores auditados e nome da coluna indicado no parâmetro col.name.audit.values (default book.value)."
+
+msgid "If col.name.riskweights is not NULL, the filled.high.values requires a column with the col.name.riskweights and the name of this column has to be provided by parameter col.name.riskweights (default NULL)."
+msgstr "Se o parâmetro col.name.riskweights não é NULL, os valores altos devem ser registrados em uma coluna indicada pelo parâmetro col.name.riskweights (default NULL)"
+
+msgid "You had at least 20 errors in the sample - some statistical software recommends High Error Rate evaluation instead of Low Error Rate evaluation in this case. However, High Error Rate evaluation is not yet implemented. The evaluation might not be appropriate."
+msgstr "Foram verificados pelo menos 20 erros na amostra - alguns softwares estatísticos recomendam um tipo de avaliação ainda não implementado. A avaliação realizada pode não ser adequada."
+
+msgid "plan has to be an object from type MUS.planning.result. Use function MUS.planning to create such an object."
+msgstr "o Plano (plan) deve ser um objeto do tipo MUS.planning.result. Use a função MUS.planning para criar tal objeto."
+
+msgid "seed has to be an integer value greater or equal than 0."
+msgstr "a semente do gerador aleatório (seed) deve ser maior ou igual a 0."
+
+msgid "obey.n.as.min has to be TRUE or FALSE."
+msgstr "o parâmetro obey.n.as.min deve ser TRUE ou FALSE."
+
+msgid "start.point has to be a numeric value between 0 and possible recalculated interval length (both inclusive)."
+msgstr "o parâmetro start.point deve ser numérico entre 0 e o tamanho do intervalo recalculado (inclusive)."
+
+msgid "Data needs to be a data frame or a matrix but it is not."
+msgstr "Dados devem ser data frame ou matriz, mas não são."
+
+msgid "The data frame requires at least a column with the book values and the name of this column has to be provided by parameter col.name.book.values (default book.value)."
+msgstr "O data frame requer ao menos uma coluna com valores informados e o nome da coluna indicado pelo parâmetro col.name.book.values (default book.value)."
+
+msgid "There are missing or infinite values (NA, NaN or Inf) as book values in your data. Those elements have no chance for selection. You have to audit them separately."
+msgstr "Os dados contém valores faltantes ou infinitos (NA, NaN ou Inf) nos valores informados (book values). Tais elementos não serão selecionados e deverão ser auditados separadamente."
+
+msgid "There are zeros as book values in your data. Those elements have no chance for selection. You have to audit them separately."
+msgstr "Os dados contém valores informados (book values) iguais a zero. Tais elementos não serão selecionados e deverão ser auditados separadamente."
+
+msgid "There are negative values as book values in your data. Those elements have no chance for selection. You have to audit them separately."
+msgstr "Os dados contém valores informados (book values) negativos. Tais elementos não serão selecionados e deverão ser auditados separadamente."
+
+msgid "Confidence level has to be a numeric value between 0 and 1 (both exclusive)."
+msgstr "O nível de confiança deve ser numérico entre 0 e 1 (exclusive)."
+
+msgid "Tolerable Error has to be a numeric value between 0 and book value (both exclusive)."
+msgstr "O Erro Tolerável deve ser numérico entre 0 e 1 (exclusive)."
+
+msgid "Expected error has to be a numeric value greater or equal to 0."
+msgstr "O Erro Esperado deve ser numérico entre 0 e 1 (exclusive)."
+
+msgid "Minimum number of sample size has to be a numeric value between 0 and the number of items in the population (last exclusive). If the minimum sample size is equal or larger than the number of items in the population, sampling is not suitable because every item has to be tested anyway."
+msgstr "O tamanho da amostra mínimo deve ser entre 1 e o número de itens na população (exclusive). Se o tamanho da amostra for maior ou igual o número de itens na população, a amostragem não é aplicável pois todos os itens devem ser testados."
+
+msgid "Tolerable Error has to be a numeric value between 0 and book value (both exclusive). If the tolerable error is equal larger than book value, no sampling is necessary. However, Planning will be proceeded."
+msgstr "O Erro Tolerável deve ser um valor numérico enter 0 e o valor informado (book value) - exclusive. Caso o erro tolerável seja maior que o valor informado, a amostragem não é necessária. Entretanto, o planejamento será executado."
+
+msgid "Undefined situation: If 0 errors in the sample occur, the sample size needs to be positive!"
+msgstr "Situação indefinida: Se não há erros na amostra, o tamanho da amostra deve ser positivo!"
+
+msgid "MUS makes no sense for your sampling problem - your sample size needs to be bigger than the number of items in your population."
+msgstr "MUS não se aplica ao problema - a amostra seria maior que o número de itens da população."
+
+msgid "Just for information: If the expected error is equal or larger than te tolerable error, MUS is not applicable."
+msgstr "Observação: Se o erro esperado é maior ou igual ao erro tolerado, MUS não é aplicável."
+
+msgid "n.optimal is not plausible (negative), internal error, please report as bug."
+msgstr "O tamanho da amostra (n.optimal) não é plausível (negativo), erro interno, favor reportar como bug."
+
+msgid "n.optimal is not plausible (smaller than lower bound ni), internal error, please report as bug."
+msgstr "O tamanho da amostra (n.optimal) não é plausível (menor que o limite inferior ni), erro interno, favor reportar como bug."
+
+msgid "n.optimal is not plausible (greater than upper bound nip1), internal error, please report as bug."
+msgstr "O tamanho da amostra (n.optimal) não é plausível (maior que o limite superior nip1), erro interno, favor reportar como bug."
+
+msgid "x has to be an object from type MUS.evaluation.result. Use function MUS.evaluate to create such an object."
+msgstr "x deve ser um objeto do tipo MUS.evaluation.result. Use a função MUS.evaluate para criar tal objeto."
+
+msgid "one"
+msgid_plural "many"
+msgstr[0] "um"
+msgstr[1] "vários"
