@@ -6,7 +6,7 @@ print.MUS.evaluation.result <- function(x, ...){
 	if(x$acceptable) {
 		cat(strwrap("The sample provides a reasonable basis to conclude that the population is free of material misstatements (given the parameters below)."), sep="\n")
 	} else {
-		cat(strwrap("The sample provides NO reasonable basis to conclude that the population is free of material misstatements (given the parameters below). You have to get further audit evidence or extend the sample (currently not supported by this package)."), sep="\n")
+		cat(strwrap("The sample provides NO reasonable basis to conclude that the population is free of material misstatements (given the parameters below).\nYou have to get further audit evidence or extend the sample (currently not supported by this package)."), sep="\n")
 	}
 	cat("\n")
 	cat(strwrap(paste0("The conclusion is based on a calculated Upper Error Limit of ",
@@ -27,6 +27,16 @@ print.MUS.evaluation.result <- function(x, ...){
 	cat(x$Results.Total$Total.number.of.items.examined)
 	cat("\n- Threshold for individual significant items:\t")
 	cat(round(x$High.value.threshold))
+
+	cat("\n\nResults for high error rate evaluation:\n\n")
+	if(x$high.error.rate$acceptable) {
+		cat(strwrap("The sample provides a reasonable basis to conclude that the population is free of material misstatements (given the parameters below)."), sep="\n")
+	} else {
+		cat(strwrap("The sample provides NO reasonable basis to conclude that the population is free of material misstatements (given the parameters below).\nYou have to get further audit evidence or extend the sample (currently not supported by this package)."), sep="\n")
+	}
+	cat("\n")
+	cat(strwrap(paste0("The conclusion is based on a calculated Upper Error Limit of ",
+			   round(x$high.error.rate$upper.error.limit), ".")), sep="\n")
 
 	cat("\n\nProjected Misstatement:\n")
 	if(sum(x$Results.Total$Number.of.Errors)==0) {
