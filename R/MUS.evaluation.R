@@ -34,7 +34,7 @@
 
 
 MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.audit.values="audit.value", col.name.riskweights=NULL,
-	interval.type="one-sided"){
+	interval.type="one-sided", print.advice=TRUE){
 	# checking parameter extract, col.name.audit.values and col.name.riskweights
 	if (class(extract)!="MUS.extraction.result") stop("extract has to be an object from type MUS.extraction.result. Use function MUS.extraction to create such an object.")
 	if (!is.character(col.name.audit.values) | length(col.name.audit.values)!=1) stop("col.name.audit.values has to be a single character value (default book.value).")
@@ -153,8 +153,7 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	qty_errors <- sum(ratios!=1)
 	ratios_mean <- mean(ratios)
 	ratios_sd <- sd(ratios)
-	total_pop_size <- nrow(extract$data)
-	N <- total_pop_size - nrow(filled.high.values)
+	N <- nrow(extract$data) - nrow(filled.high.values)
 	Y <- sum(extract$data[,extract$col.name.book.values]) - sum(filled.high.values[,extract$col.name.book.values])
 	R <- ifelse(interval.type == "two-sided",  1 - (1- extract$confidence.level) / 2, extract$confidence.level)
 	U <- qt(R, qty_errors - 1)
@@ -173,7 +172,9 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 
 	# gives warning if high error rate evaluation might be appropriate
 	if (max(Results.Sample$Number.of.Errors)>=20) {
-		warning("You had at least 20 errors in the sample - some statistical software recommends High Error Rate evaluation instead of Low Error Rate evaluation in this case.")
+		if (print.advice) {
+			message("\n** You had at least 20 errors in the sample. High Error Rate evaluation recommended.")
+		}
 		acceptable <- acceptable.high.error.rate
 	}
 
@@ -183,4 +184,25 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	high.error.rate=high.error.rate, debug=debug))
 	class(result) <- "MUS.evaluation.result"
 	return(result)
+}
+
+combined.UEL.high.error.rate <- function(ds, extract, col.name.audit.values="audit.value", interval.type="one-sided"){
+	filled.sample <- ds[ds$selected==1,]
+	filled.high.values <- ds[ds$selected==2,]
+	not.high.value <- c(ds$selected<2)
+	ratios <- (filled.sample[,extract$col.name.book.values]-filled.sample[,col.name.audit.values])/filled.sample[,extract$col.name.book.values]
+	qty_errors <- sum(ratios!=1)
+	ratios_mean <- mean(ratios)
+	ratios_sd <- sd(ratios)
+
+	N <- (nrow(ds[not.high.value,]))
+	Y <- sum(ds[not.high.value, extract$col.name.book.values])
+	R <- ifelse(interval.type == "two-sided",  1 - (1- extract$confidence.level) / 2, extract$confidence.level)
+	U <- qt(R, qty_errors - 1)
+
+    high.values.error <- sum(filled.high.values[,extract$col.name.book.values]-filled.high.values[,col.name.audit.values])
+	most.likely.error <- ratios_mean * Y
+	precision <- U * Y * ratios_sd / sqrt(nrow(filled.sample))
+	upper.error.limit <- most.likely.error + precision * sign(most.likely.error) + high.values.error
+	upper.error.limit
 }
