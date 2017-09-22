@@ -14,13 +14,18 @@
 
 
 # create a table, based on the ideas of precision gap widening and cell evaluation
-.MUS.precision.gap.widening.table <- function(ds, population.amount, confidence.level, filled.sample){
+.MUS.precision.gap.widening.table <- function(ds, idx, population.amount, confidence.level, filled.sample){
 	# UEL Factor = lambda = E(distribution) = Sample size * Errors in Population / Elements in population
 	UEL.Factor <- round(sapply(0:length(ds), .calculate.m.hyper, sample.size=nrow(filled.sample), alpha=1-confidence.level, account.value=population.amount)*nrow(filled.sample)/population.amount, digits=4)
 	average.ds <- round(cumsum(ds)/1:length(ds), digits=4)
 
 	# create table
-	result.table <- data.frame(Error.Stage=0:length(ds), UEL.Factor=UEL.Factor, Tainting=c(1,ds), Average.Taintings=c(0,average.ds), UEL.previous.Stage=rep(0, times=length(UEL.Factor)), Load.and.Spread=rep(0, times=length(UEL.Factor)), Simple.Spread=c(UEL.Factor[1], rep(NA, times=length(UEL.Factor)-1)), Stage.UEL.max=c(UEL.Factor[1], rep(NA, times=length(UEL.Factor)-1)))
+	result.table <- data.frame(Error.Stage=0:length(ds), UEL.Factor=UEL.Factor, Tainting=c(1,ds),
+		Average.Taintings=c(0,average.ds), UEL.previous.Stage=rep(0, times=length(UEL.Factor)),
+		Load.and.Spread=rep(0, times=length(UEL.Factor)), Simple.Spread=c(UEL.Factor[1], rep(NA, times=length(UEL.Factor)-1)),
+		Stage.UEL.max=c(UEL.Factor[1], rep(NA, times=length(UEL.Factor)-1)),
+		sampling.interval=c(max(filled.sample$sampling.interval), filled.sample[idx, "sampling.interval"])
+	)
 	if (length(ds)==0) return(result.table) # stop to prevent errors if no errors are found
 	# fill last 4 columns (row by row, because the next row is dependent of values of the previous row)
 	for (row in (1:length(ds))+1){ # for each Error.Stage, because first row with 0 taintings is always +1
@@ -67,6 +72,10 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 		# prevent Errors if column name will not be unique (a column d is used in over- and understatement evaluation)
 		if(is.element("d", names(filled.sample))) stop("filled.sample must not have a column 'd' because this column name is used for internal evaluation.")
 		if(is.element("tord", names(filled.sample))) stop("filled.sample must not have a column 'tord' because this column name is used for internal evaluation.")
+		# add sampling interval to filled sample, in order to be able to calculate combined UEL
+		if(!is.element("sampling.interval", names(filled.sample))) {
+			filled.sample$sampling.interval = rep(extract$sampling.interval, times=nrow(filled.sample))
+		}
 		# calculate suitable d's und evaluation table - overstatements
 		tmp <- 1-filled.sample[,col.name.audit.values]/filled.sample[,extract$col.name.book.values]
 		tord <- tmp
@@ -74,7 +83,7 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 			tord <- 1-tmp
 		}
 		if (tainting.order=="absolute") {
-			tord <- filled.sample[,col.name.audit.values]-filled.sample[,extract$col.name.book.values]
+			tord <- filled.sample[,extract$col.name.book.values]-filled.sample[,col.name.audit.values]
 		}
 		if (tainting.order=="random") {
 			tord <- sample(tmp)
@@ -82,13 +91,14 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 		ds <- cbind(filled.sample, d=tmp, tord=tord) # calculate d's and add to data frame
 		ds <- subset(ds, ds$d>0) # filter out all correct (and understatements which will be handled later)
 		ds <- ds[order(ds$tord, decreasing=TRUE),] # sort d's descendend
+		idx <- rownames(ds)
 		if(is.null(col.name.riskweights)) {
 			ds <- ds$d
 		} else {
 			ds <- ds$d/ds[,col.name.riskweights] # if risk weights are provided, also multiply with them
 		}
 		ds <- round(ds, digits=4)
-		over <- .MUS.precision.gap.widening.table(ds, population.amount, extract$confidence.level, filled.sample) # calculate table
+		over <- .MUS.precision.gap.widening.table(ds, idx, population.amount, extract$confidence.level, filled.sample) # calculate table
 
 		# calculate suitable d's und evaluation table - understatements
 		tmp <- 1-filled.sample[,col.name.audit.values]/filled.sample[,extract$col.name.book.values]
@@ -97,7 +107,7 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 			tord <- tmp
 		}
 		if (tainting.order=="absolute") {
-			tord <- filled.sample[,col.name.audit.values]-filled.sample[,extract$col.name.book.values]
+			tord <- filled.sample[,extract$col.name.book.values]-filled.sample[,col.name.audit.values]
 		}
 		if (tainting.order=="random") {
 			tord <- sample(tmp)
@@ -106,13 +116,14 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 
 		ds <- subset(ds, ds$d<0) # filter out all correct (and overstatements which was handled before)
 		ds <- ds[order(ds$tord, decreasing=FALSE),] # sort d's ascendend
+		idx <- rownames(ds)
 		if(is.null(col.name.riskweights)) {
 			ds <- -ds$d
 		} else {
 			ds <- -ds$d/ds[,col.name.riskweights] # if risk weights are provided, also multiply with them
 		}
 		ds <- round(ds, digits=4)
-		under <- .MUS.precision.gap.widening.table(ds, population.amount, extract$confidence.level, filled.sample) # calculate table
+		under <- .MUS.precision.gap.widening.table(ds, idx, population.amount, extract$confidence.level, filled.sample) # calculate table
 
 		# calculate results table
 		Gross.most.likely.error=c(overstatements=(sum(over$Tainting)-1), understatements=(sum(under$Tainting)-1))*extract$sampling.interval # also required as intermediate step for later calculations
@@ -172,8 +183,8 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
     acceptable <- acceptable.low.error.rate
 
 	# calculate high error rate evaluation
-	ratios <- (filled.sample[,extract$col.name.book.values]-filled.sample[,col.name.audit.values])/filled.sample[,extract$col.name.book.values]
-	qty_errors <- sum(ratios!=1)
+	ratios <- 1 - filled.sample[,col.name.audit.values]/filled.sample[,extract$col.name.book.values]
+	qty_errors <- sum(ratios!=0)
 	ratios_mean <- mean(ratios)
 	ratios_sd <- sd(ratios)
 	N <- nrow(extract$data) - nrow(filled.high.values)
@@ -208,24 +219,28 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	class(result) <- "MUS.evaluation.result"
 	result$moment.bound <- moment.bound(result)
 	result$acceptable.moment.bound <- (result$moment.bound <= extract$tolerable.error)
+	warning("TODO: moment bound calculation is off...")
 	return(result)
 }
 
-combined.UEL.high.error.rate <- function(ds, extract, col.name.audit.values="audit.value", interval.type="one-sided"){
-	filled.sample <- ds[ds$selected==1,]
-	filled.high.values <- ds[ds$selected==2,]
-	not.high.value <- c(ds$selected<2)
-	ratios <- (filled.sample[,extract$col.name.book.values]-filled.sample[,col.name.audit.values])/filled.sample[,extract$col.name.book.values]
-	qty_errors <- sum(ratios!=1)
+combined.UEL.high.error.rate <- function(evaluation, interval.type="one-sided"){
+	filled.sample <- evaluation$filled.sample
+	filled.high.values <- evaluation$filled.high.values
+	col.name.audit.values <- evaluation$col.name.audit.values
+	col.name.book.values <- evaluation$col.name.book.values
+	confidence.level <- evaluation$confidence.level
+
+	ratios <- 1 - filled.sample[,col.name.audit.values]/filled.sample[,col.name.book.values]
+	qty_errors <- sum(ratios!=0)
 	ratios_mean <- mean(ratios)
 	ratios_sd <- sd(ratios)
 
-	N <- (nrow(ds[not.high.value,]))
-	Y <- sum(ds[not.high.value, extract$col.name.book.values])
-	R <- ifelse(interval.type == "two-sided",  1 - (1- extract$confidence.level) / 2, extract$confidence.level)
+	N <- nrow(evaluation$data) - nrow(filled.high.values)
+	Y <- sum(evaluation$data[, col.name.book.values]) - sum(filled.high.values[, col.name.book.values])
+	R <- ifelse(interval.type == "two-sided",  1 - (1 - confidence.level) / 2, confidence.level)
 	U <- qt(R, qty_errors - 1)
 
-    high.values.error <- sum(filled.high.values[,extract$col.name.book.values]-filled.high.values[,col.name.audit.values])
+    high.values.error <- sum(filled.high.values[, col.name.book.values]-filled.high.values[, col.name.audit.values])
 	most.likely.error <- ratios_mean * Y
 	precision <- U * Y * ratios_sd / sqrt(nrow(filled.sample))
 	upper.error.limit <- most.likely.error + precision * sign(most.likely.error) + high.values.error

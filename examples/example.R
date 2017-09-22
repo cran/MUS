@@ -127,7 +127,10 @@ for (s in strata) {
 
   }
 }
-cat("\n\n- Combined Upper Error Limit\t\t\t", combined.UEL.high.error.rate(dados, extract[[1]]), "\n")
+cat("\n\n- Combined Upper Error Limit\t\t\t", combined.UEL.high.error.rate(evaluation[[1]]))
+
+cat("\n\n- moment bound example\t\t\t\t", moment.bound(c(rep(0, 96), -.16, .04, .18, .47)))
+cat("\n\nEND\n")
 
 selected <- dados$id[dados$selected>0]
 

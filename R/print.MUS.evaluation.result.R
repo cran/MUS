@@ -10,6 +10,16 @@ print.MUS.evaluation.result <- function(x, error.rate="both",
 		if (error.rate=="low" || error.rate=="both" || (error.rate=="auto" && max(x$Results.Sample$Number.of.Errors)<20)) {
 			cat("\n- Number of Overstatements:\t\t\t", x$Results.Total$Number.of.Errors["overstatements"])
 			cat("\n- Number of Understatements:\t\t\t", x$Results.Total$Number.of.Errors["understatements"])
+			cat("\n- Sample Misstatement Amount:\t\t\t", sum(x$filled.sample[,x$col.name.book.values] - x$filled.sample[,x$col.name.audit.values]))
+			cat("\n- Sample Misstatement Rate:\t\t\t", 100*(1-sum(x$filled.sample[,x$col.name.audit.values]) / sum(x$filled.sample[,x$col.name.book.values])), "%")
+			cat("\n- High Values Misstatement Amount:\t\t", sum(x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values]))
+			cat("\n- High Values Misstatement Rate:\t\t", 100*(1-sum(x$filled.high.values[,x$col.name.audit.values]) / sum(x$filled.high.values[,x$col.name.book.values])), "%")
+			cat("\n- Audited Misstatement Amount:\t\t\t",
+				sum(x$filled.sample[,x$col.name.book.values] - x$filled.sample[,x$col.name.audit.values]) +
+				sum(x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values]))
+			cat("\n- Audited Misstatement Rate:\t\t\t",
+				100*((sum(x$filled.high.values[,x$col.name.book.values])+sum(x$filled.sample[,x$col.name.book.values])) /
+					 (sum(x$filled.high.values[,x$col.name.audit.values])+sum(x$filled.sample[,x$col.name.audit.values]))-1), "%")
 			cat("\n- Most Likely Error:\t\t\t\t", x$Results.Total$Net.most.likely.error[1])
 			cat("\n- Upper Error Limit (Low Error Rate):\t\t", round(max(x$Results.Total$Net.upper.error.limit*c(1,-1))))
 			cat("\n- Tainting Order:\t\t\t\t", toupper(x$tainting.order))
