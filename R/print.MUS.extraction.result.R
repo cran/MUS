@@ -3,7 +3,7 @@ print.MUS.extraction.result <- function(x, print.title=TRUE, print.planning=FALS
 	if (class(x)!="MUS.extraction.result" && class(x)!="MUS.evaluation.result" && class(x)!="MUS.planning.result") {
 		stop("x has to be an object from type MUS.extraction.result or MUS.evaluation.result or MUS.planning.result.")
 	}
-	cat("\nExtraction Parameters:\n")
+	cat("\nExtraction Parameters\n")
 	if (print.planning) {
 		print.MUS.planning.result(x)
 	}

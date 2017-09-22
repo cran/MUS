@@ -4,7 +4,7 @@ print.MUS.planning.result <- function(x, print.title=TRUE, ...){
 		stop("x has to be an object from type MUS.extraction.result or MUS.evaluation.result or MUS.planning.result.")
 	}
 	if (print.title) {
-		cat("\nPlanning Parameters:\n")
+		cat("\nPlanning Parameters\n")
 	}
 	cat("\n- Confidence Level:\t\t\t\t", x$confidence.level)
 	cat("\n- Population size:\t\t\t\t", nrow(x$data))

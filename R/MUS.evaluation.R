@@ -34,7 +34,7 @@
 
 
 MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.audit.values="audit.value", col.name.riskweights=NULL,
-	interval.type="one-sided", print.advice=TRUE){
+	interval.type="one-sided", print.advice=TRUE, tainting.order="decreasing"){
 	# checking parameter extract, col.name.audit.values and col.name.riskweights
 	if (class(extract)!="MUS.extraction.result") stop("extract has to be an object from type MUS.extraction.result. Use function MUS.extraction to create such an object.")
 	if (!is.character(col.name.audit.values) | length(col.name.audit.values)!=1) stop("col.name.audit.values has to be a single character value (default book.value).")
@@ -66,11 +66,22 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 
 		# prevent Errors if column name will not be unique (a column d is used in over- and understatement evaluation)
 		if(is.element("d", names(filled.sample))) stop("filled.sample must not have a column 'd' because this column name is used for internal evaluation.")
-
+		if(is.element("tord", names(filled.sample))) stop("filled.sample must not have a column 'tord' because this column name is used for internal evaluation.")
 		# calculate suitable d's und evaluation table - overstatements
-		ds <- cbind(filled.sample, d=1-filled.sample[,col.name.audit.values]/filled.sample[,extract$col.name.book.values]) # calculate d's and add to data frame
+		tmp <- 1-filled.sample[,col.name.audit.values]/filled.sample[,extract$col.name.book.values]
+		tord <- tmp
+		if (tainting.order=="increasing") {
+			tord <- 1-tmp
+		}
+		if (tainting.order=="absolute") {
+			tord <- filled.sample[,col.name.audit.values]-filled.sample[,extract$col.name.book.values]
+		}
+		if (tainting.order=="random") {
+			tord <- sample(tmp)
+		}
+		ds <- cbind(filled.sample, d=tmp, tord=tord) # calculate d's and add to data frame
 		ds <- subset(ds, ds$d>0) # filter out all correct (and understatements which will be handled later)
-		ds <- ds[order(ds$d,decreasing=TRUE),] # sort d's descendend
+		ds <- ds[order(ds$tord, decreasing=TRUE),] # sort d's descendend
 		if(is.null(col.name.riskweights)) {
 			ds <- ds$d
 		} else {
@@ -80,9 +91,21 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 		over <- .MUS.precision.gap.widening.table(ds, population.amount, extract$confidence.level, filled.sample) # calculate table
 
 		# calculate suitable d's und evaluation table - understatements
-		ds <- cbind(filled.sample, d=1-filled.sample[,col.name.audit.values]/filled.sample[,extract$col.name.book.values]) # calculate d's and add to data frame
+		tmp <- 1-filled.sample[,col.name.audit.values]/filled.sample[,extract$col.name.book.values]
+		tord <- tmp
+		if (tainting.order=="increasing") {
+			tord <- tmp
+		}
+		if (tainting.order=="absolute") {
+			tord <- filled.sample[,col.name.audit.values]-filled.sample[,extract$col.name.book.values]
+		}
+		if (tainting.order=="random") {
+			tord <- sample(tmp)
+		}
+		ds <- cbind(filled.sample, d=tmp, tord=tord) # calculate d's and add to data frame
+
 		ds <- subset(ds, ds$d<0) # filter out all correct (and overstatements which was handled before)
-		ds <- ds[order(ds$d,decreasing=FALSE),] # sort d's ascendend
+		ds <- ds[order(ds$tord, decreasing=FALSE),] # sort d's ascendend
 		if(is.null(col.name.riskweights)) {
 			ds <- -ds$d
 		} else {
@@ -145,8 +168,8 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 				Net.upper.error.limit=Results.Sample$Gross.upper.error.limit-Results.Sample$Gross.most.likely.error+c(overstatements=1, understatements=-1)*sum(Results.Sample$Gross.most.likely.error*c(1,-1))+Results.High.values$Net.Value.of.Errors*c(1,-1))
 
 	# extract a final statement if population is acceptable (provided the confidence level)
-	acceptable.low.error.rate <- max(Results.Total$Net.upper.error.limit*c(1,-1))<extract$tolerable.error
-    acceptable = acceptable.low.error.rate
+	acceptable.low.error.rate <- max(Results.Total$Net.upper.error.limit*c(1,-1)) < extract$tolerable.error
+    acceptable <- acceptable.low.error.rate
 
 	# calculate high error rate evaluation
 	ratios <- (filled.sample[,extract$col.name.book.values]-filled.sample[,col.name.audit.values])/filled.sample[,extract$col.name.book.values]
@@ -162,7 +185,7 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	most.likely.error <- ratios_mean * Y
 	precision <- U * Y * ratios_sd / sqrt(nrow(filled.sample))
 	upper.error.limit <- most.likely.error + precision * sign(most.likely.error) + high.values.error
-	acceptable.high.error.rate = (upper.error.limit < extract$tolerable.error)
+	acceptable.high.error.rate <- (upper.error.limit <= extract$tolerable.error)
 
 	debug <- list(mean=ratios_mean, sd=ratios_sd, precision=precision, Y=Y, U=U, R=R,
 		N=N, n=nrow(filled.sample), high.values.error=high.values.error)
@@ -179,10 +202,12 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	}
 
 	# return all results and parameters
-	result <- c(extract, list(filled.sample=filled.sample, filled.high.values=filled.high.values, col.name.audit.values=col.name.audit.values, Overstatements.Result.Details=over, Understatements.Result.Details=under, Results.Sample=Results.Sample, Results.High.values=Results.High.values, Results.Total=Results.Total, acceptable=acceptable,
+	result <- c(extract, list(filled.sample=filled.sample, filled.high.values=filled.high.values, col.name.audit.values=col.name.audit.values, Overstatements.Result.Details=over, Understatements.Result.Details=under, Results.Sample=Results.Sample, Results.High.values=Results.High.values, Results.Total=Results.Total, acceptable=acceptable, tainting.order=tainting.order,
 	acceptable.low.error.rate=acceptable.low.error.rate, acceptable.high.error.rate=acceptable.high.error.rate,
-	high.error.rate=high.error.rate, debug=debug))
+	high.error.rate=high.error.rate, debug=debug), moment.bound=NA)
 	class(result) <- "MUS.evaluation.result"
+	result$moment.bound <- moment.bound(result)
+	result$acceptable.moment.bound <- (result$moment.bound <= extract$tolerable.error)
 	return(result)
 }
 

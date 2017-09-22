@@ -57,7 +57,7 @@ if(!"id" %in% colnames(dados)) {
   dados$id <- c(1:nrow(dados))
 }
 if(!"audit.value" %in% colnames(dados)) {
-  dados$audit.value <- dados$book.value*(1-rbinom(nrow(dados), 1, 0.25))
+  dados$audit.value <- dados$book.value*(1-rbinom(nrow(dados), 1, 0.15))
 }
 if(!"selected" %in% colnames(dados)) {
   dados$selected <- 0
@@ -103,7 +103,7 @@ for (s in strata) {
       audited.high[[s]] <- extract[[s]]$high.values
 
       # Evaluate the sample, cache and print it
-      evaluation[[s]] <- MUS.evaluation(extract[[s]], audited[[s]], audited.high[[s]], print.advice=FALSE)
+      evaluation[[s]] <- MUS.evaluation(extract[[s]], audited[[s]], audited.high[[s]], print.advice=FALSE, tainting.order="absolute")
       print(evaluation[[s]], print.misstatements=FALSE)
     }
     if (MUS.step > 3) {

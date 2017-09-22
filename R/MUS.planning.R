@@ -80,7 +80,10 @@ MUS.planning <- function(data, col.name.book.values="book.value", confidence.lev
 	if (!is.numeric(tolerable.error) | length(tolerable.error)!=1 | tolerable.error<=0) stop("Tolerable Error has to be a numeric value between 0 and book value (both exclusive).")
 	if (!is.numeric(expected.error) | length(expected.error)!=1 | expected.error<0) stop("Expected error has to be a numeric value greater or equal to 0.")
 	if (!is.numeric(n.min) | length(n.min)!=1 | n.min<0 | n.min>=num.items) stop("Minimum number of sample size has to be a numeric value between 0 and the number of items in the population (last exclusive). If the minimum sample size is equal or larger than the number of items in the population, sampling is not suitable because every item has to be tested anyway.")
-
+	too.large <- (tolerable.error/book.value)*(1-confidence.level)*sqrt(tolerable.error-expected.error) < 0.07
+	if (too.large) {
+		warning("Combination of parameters leads to impractically large sample.")
+	}
 	if (tolerable.error>=book.value) {
 		warning("Tolerable Error has to be a numeric value between 0 and book value (both exclusive). If the tolerable error is equal larger than book value, no sampling is necessary. However, Planning will be proceeded.")
 		n.optimal <- 0
