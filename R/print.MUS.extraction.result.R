@@ -9,15 +9,15 @@ print.MUS.extraction.result <- function(x, print.title=TRUE, print.planning=FALS
 	}
 	cat("\n- Sample items:\t\t\t\t\t", nrow(x$sample))
 	cat("\n- Sample amount:\t\t\t\t", round(sum(x$sample[,x$col.name.book.values])))
-	cat("\n- Sample coverage:\t\t\t\t", round(sum(x$sample[,x$col.name.book.values]) * 100 / x$book.value, 2), "%")
+	cat("\n- Sample coverage:\t\t\t\t", percent(sum(x$sample[,x$col.name.book.values]) / x$book.value))
 
 	cat("\n- High Value items:\t\t\t\t", nrow(x$high.values))
 	cat("\n- High Value amount:\t\t\t\t", round(sum(x$high.values[,x$col.name.book.values])))
-	cat("\n- High Value coverage:\t\t\t\t", round(sum(x$high.values[,x$col.name.book.values]) * 100 / x$book.value, 2), "%")
+	cat("\n- High Value coverage:\t\t\t\t", percent(sum(x$high.values[,x$col.name.book.values]) / x$book.value))
 
 	cat("\n- Audited items:\t\t\t\t", round(nrow(x$high.values) + nrow(x$sample)))
 	cat("\n- Audited amount:\t\t\t\t", round(sum(x$high.values[,x$col.name.book.values]) +
 		sum(x$sample[,x$col.name.book.values])))
-	cat("\n- Audited coverage:\t\t\t\t", round((sum(x$high.values[,x$col.name.book.values]) +
-		sum(x$sample[,x$col.name.book.values])) * 100 / x$book.value, 2), "%\n")
+	cat("\n- Audited coverage:\t\t\t\t", percent((sum(x$high.values[,x$col.name.book.values]) +
+		sum(x$sample[,x$col.name.book.values])) / x$book.value), "\n")
 }

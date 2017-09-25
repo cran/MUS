@@ -179,7 +179,8 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 				Net.upper.error.limit=Results.Sample$Gross.upper.error.limit-Results.Sample$Gross.most.likely.error+c(overstatements=1, understatements=-1)*sum(Results.Sample$Gross.most.likely.error*c(1,-1))+Results.High.values$Net.Value.of.Errors*c(1,-1))
 
 	# extract a final statement if population is acceptable (provided the confidence level)
-	acceptable.low.error.rate <- max(Results.Total$Net.upper.error.limit*c(1,-1)) < extract$tolerable.error
+	UEL.low.error.rate <- max(Results.Total$Net.upper.error.limit*c(1,-1))
+	acceptable.low.error.rate <- UEL.low.error.rate < extract$tolerable.error
     acceptable <- acceptable.low.error.rate
 
 	# calculate high error rate evaluation
@@ -195,13 +196,13 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
     high.values.error <- sum(filled.high.values[,extract$col.name.book.values]-filled.high.values[,col.name.audit.values])
 	most.likely.error <- ratios_mean * Y
 	precision <- U * Y * ratios_sd / sqrt(nrow(filled.sample))
-	upper.error.limit <- most.likely.error + precision * sign(most.likely.error) + high.values.error
-	acceptable.high.error.rate <- (upper.error.limit <= extract$tolerable.error)
+	UEL.high.error.rate <- most.likely.error + precision * sign(most.likely.error) + high.values.error
+	acceptable.high.error.rate <- (UEL.high.error.rate <= extract$tolerable.error)
 
 	debug <- list(mean=ratios_mean, sd=ratios_sd, precision=precision, Y=Y, U=U, R=R,
 		N=N, n=nrow(filled.sample), high.values.error=high.values.error)
 
-	high.error.rate = list(	most.likely.error = most.likely.error + high.values.error, upper.error.limit = upper.error.limit,
+	high.error.rate = list(	most.likely.error = most.likely.error + high.values.error, upper.error.limit = UEL.high.error.rate,
 		acceptable = acceptable.high.error.rate, debug = debug)
 
 	# gives warning if high error rate evaluation might be appropriate
@@ -214,12 +215,18 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 
 	# return all results and parameters
 	result <- c(extract, list(filled.sample=filled.sample, filled.high.values=filled.high.values, col.name.audit.values=col.name.audit.values, Overstatements.Result.Details=over, Understatements.Result.Details=under, Results.Sample=Results.Sample, Results.High.values=Results.High.values, Results.Total=Results.Total, acceptable=acceptable, tainting.order=tainting.order,
+	UEL.low.error.rate=UEL.low.error.rate, UEL.high.error.rate=UEL.high.error.rate,
 	acceptable.low.error.rate=acceptable.low.error.rate, acceptable.high.error.rate=acceptable.high.error.rate,
 	high.error.rate=high.error.rate, debug=debug), moment.bound=NA)
 	class(result) <- "MUS.evaluation.result"
 	result$moment.bound <- moment.bound(result)
 	result$acceptable.moment.bound <- (result$moment.bound <= extract$tolerable.error)
-	warning("TODO: moment bound calculation is off...")
+	if (require("DescTools")) {
+		result$binomial.bound <- binomial.bound(result)
+		result$acceptable.binomial.bound <- (result$binomial.bound <= extract$tolerable.error)
+		result$multinomial.bound <- multinomial.bound(result)
+		result$acceptable.multinomial.bound <- (result$multinomial.bound <= extract$tolerable.error)
+	}
 	return(result)
 }
 

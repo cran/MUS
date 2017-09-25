@@ -1,4 +1,4 @@
-moment.bound <- function(x, confidence.level=0.95) {
+moment.bound <- function(x, confidence.level=0.95, as.percentage=FALSE) {
     # Dworking & Grimlund, 1984
     # data = c(rep(0, 96), -.16, .04, .18, .47)
     if (!class(x)=="MUS.evaluation.result" && !is.vector(x)) stop("x has to be a vector or an object of type MUS.evaluation.result. Use function MUS.evaluate to create such an object.")
@@ -6,10 +6,10 @@ moment.bound <- function(x, confidence.level=0.95) {
     if (class(x)=="MUS.evaluation.result") {
         data <- (x$filled.sample[,x$col.name.book.values] - x$filled.sample[,x$col.name.audit.values]) / x$filled.sample[,x$col.name.book.values]
         confidence.level <- x$confidence.level
-        mult <- x$Results.Total$Net.most.likely.error[1]
+        mult <- ifelse(as.percentage, 0, x$Results.Total$Net.most.likely.error[1] )
     } else {
         data <- x
-        mult <- 1
+        mult <- 0
     }
 
     taintings = data[data!=0]
@@ -27,7 +27,7 @@ moment.bound <- function(x, confidence.level=0.95) {
     G <- (UN[1]-2*UC[2]^2/UC[3])
     Z <- qnorm(confidence.level)
     CB <- G + A*B*(1+Z/sqrt(9*A)-1/(9*A))^3
-    CB*mult
+    ifelse(mult == 0, CB*100, (1 + CB) * (mult))
 }
 
 combine.evaluations <- function(lx) {
@@ -46,4 +46,48 @@ combine.evaluations <- function(lx) {
         }
     }
     x
+}
+
+binomial.bound <- function(x, target="value", as.percentage=FALSE) {
+    if (!class(x)=="MUS.evaluation.result") stop("x has to be an object of type MUS.evaluation.result. Use function MUS.evaluate to create such an object.")
+    if (target == "value") {
+        misstatement <- sum(x$filled.sample[,x$col.name.book.values] - x$filled.sample[,x$col.name.audit.values])
+        audited.value <- sum(x$filled.sample[,x$col.name.book.values])
+        book.value <- length(x$filled.sample[,x$col.name.book.values])
+
+#        misstatement <- sum(x$filled.sample[,x$col.name.book.values] - x$filled.sample[,x$col.name.audit.values]) +
+#                        sum(x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values])
+#        audited.value <- sum(x$filled.sample[,x$col.name.book.values]) + sum(x$filled.high.values[,x$col.name.book.values])
+#        book.value <- length(x$filled.sample[,x$col.name.book.values]) + length(x$filled.high.values[,x$col.name.book.values])
+
+        misstatement <- ceiling(misstatement / audited.value * book.value )
+    } else {
+        misstatement <- sum(x$filled.sample[,x$col.name.book.values] != x$filled.sample[,x$col.name.audit.values])
+        book.value <- length(x$filled.sample[,x$col.name.book.values])
+#        misstatement <- sum(x$filled.sample[,x$col.name.book.values] != x$filled.sample[,x$col.name.audit.values]) +
+#                        sum(x$filled.high.values[,x$col.name.book.values] != x$filled.high.values[,x$col.name.audit.values])
+#        book.value <- length(x$filled.sample[,x$col.name.book.values]) + length(x$filled.high.values[,x$col.name.book.values])
+
+    }
+    materiality <- x$tolerable.error / x$book.value
+    # bt <- binom.test(misstatement, book.value, materiality, alternative="less", conf.level=x$confidence.level)
+    bc <- BinomCI(misstatement, book.value, conf.level=1-(1-x$confidence.level) * 2, method = "clopper-pearson")
+    #bt$conf.int[2]
+    mult <- ifelse(as.percentage, 100, x$book.value - sum(x$filled.high.values[,x$col.name.book.values]) )
+    ifelse(as.percentage, (bc[3] * mult), round(bc[3] * mult))
+}
+
+multinomial.bound <- function(x, as.percentage=FALSE) {
+    res <- NA
+    if (require("DescTools")) {
+        misstatement <- ceiling(c(1 - x$filled.sample[,x$col.name.audit.values] / x$filled.sample[,x$col.name.book.values])*100)
+
+#        misstatement <- ceiling(c(1 - x$filled.sample[,x$col.name.audit.values] / x$filled.sample[,x$col.name.book.values],
+#                         1 - x$filled.high.values[,x$col.name.audit.values] / x$filled.high.values[,x$col.name.book.values])*100)
+
+        observed <- aggregate(data.frame(count = misstatement), list(value = misstatement), length)
+        res <- MultinomCI(observed$count, conf.level=1-(1-x$confidence.level) * 2, method="sisonglaz")
+    }
+    mult <- ifelse(as.percentage, 100, x$book.value - sum(x$filled.high.values[,x$col.name.book.values]) )
+    ifelse(as.percentage, ((1-res[observed$value==0][2])) * mult, round(((1-res[observed$value==0][2])) * mult))
 }

@@ -1,48 +1,46 @@
 print.MUS.evaluation.result <- function(x, error.rate="both",
-	print.misstatements=TRUE, print.planning=FALSE, print.extraction=FALSE, print.advice=TRUE, ...){
+	print.misstatements=TRUE, print.planning=FALSE, print.extraction=FALSE, print.error.as.pct=TRUE, print.advice=TRUE, ...){
 	# Checking parameter
 	if (class(x)!="MUS.evaluation.result") stop("x has to be an object from type MUS.evaluation.result. Use function MUS.evaluate to create such an object.")
-
+	x$error.as.pct <- print.error.as.pct
 	cat("\nEvaluation Results\n")
 	if(sum(x$Results.Total$Number.of.Errors)==0) {
 		cat("\n- No misstatements found. Thus, the projected misstatememt is 0.")
 	} else {
 		if (error.rate=="low" || error.rate=="both" || (error.rate=="auto" && max(x$Results.Sample$Number.of.Errors)<20)) {
-			cat("\n- Number of Overstatements:\t\t\t", x$Results.Total$Number.of.Errors["overstatements"])
-			cat("\n- Number of Understatements:\t\t\t", x$Results.Total$Number.of.Errors["understatements"])
-			cat("\n- Sample Misstatement Amount:\t\t\t", sum(x$filled.sample[,x$col.name.book.values] - x$filled.sample[,x$col.name.audit.values]))
-			cat("\n- Sample Misstatement Rate:\t\t\t", 100*(1-sum(x$filled.sample[,x$col.name.audit.values]) / sum(x$filled.sample[,x$col.name.book.values])), "%")
-			cat("\n- High Values Misstatement Amount:\t\t", sum(x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values]))
-			cat("\n- High Values Misstatement Rate:\t\t", 100*(1-sum(x$filled.high.values[,x$col.name.audit.values]) / sum(x$filled.high.values[,x$col.name.book.values])), "%")
-			cat("\n- Audited Misstatement Amount:\t\t\t",
+			population.value <- x$book.value - sum(x$filled.high.values[,x$col.name.book.values])
+			cat("\n- Number of Missstatements:\t\t\t", x$Results.Total$Number.of.Errors["overstatements"],"overstatements,",
+				x$Results.Total$Number.of.Errors["understatements"], "understatements")
+			cat("\n- Sample Misstatement Rate (Amount):\t\t",
+				percent((1-sum(x$filled.sample[,x$col.name.audit.values]) / sum(x$filled.sample[,x$col.name.book.values]))), " \t(",
+				sum(x$filled.sample[,x$col.name.book.values] - x$filled.sample[,x$col.name.audit.values]), ")")
+			cat("\n- High Values Misstatement Rate (Amount):\t",
+				percent((1-sum(x$filled.high.values[,x$col.name.audit.values]) / sum(x$filled.high.values[,x$col.name.book.values]))), " \t(",
+				sum(x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values]), ")")
+			cat("\n- Audited Misstatement Rate (Amount):\t\t",
+				percent((sum(x$filled.high.values[,x$col.name.book.values])+sum(x$filled.sample[,x$col.name.book.values])) /
+					 (sum(x$filled.high.values[,x$col.name.audit.values])+sum(x$filled.sample[,x$col.name.audit.values]))-1), " \t(",
 				sum(x$filled.sample[,x$col.name.book.values] - x$filled.sample[,x$col.name.audit.values]) +
-				sum(x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values]))
-			cat("\n- Audited Misstatement Rate:\t\t\t",
-				100*((sum(x$filled.high.values[,x$col.name.book.values])+sum(x$filled.sample[,x$col.name.book.values])) /
-					 (sum(x$filled.high.values[,x$col.name.audit.values])+sum(x$filled.sample[,x$col.name.audit.values]))-1), "%")
-			cat("\n- Most Likely Error:\t\t\t\t", x$Results.Total$Net.most.likely.error[1])
-			cat("\n- Upper Error Limit (Low Error Rate):\t\t", round(max(x$Results.Total$Net.upper.error.limit*c(1,-1))))
+				sum(x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values]), ")")
+
+			cat("\n- Most Likely Error:\t\t\t\t", print.UEL(x, x$Results.Total$Net.most.likely.error[1]))
 			cat("\n- Tainting Order:\t\t\t\t", toupper(x$tainting.order))
+			cat("\n- Upper Error Limit (Low Error Rate):\t\t", print.UEL(x, x$UEL.low.error.rate), "\t", is.acceptable(x$acceptable.low.error.rate))
 			if (x$Results.Total$Number.of.Errors["overstatements"]>0 && x$Results.Total$Number.of.Errors["understatements"]>0) {
-				cat("\n- Upper Error Limit (Overstatements):\t\t", round(x$Results.Total$Net.upper.error.limit["overstatements"]))
-				cat("\n- Upper Error Limit (Understatements):\t\t", round(x$Results.Total$Net.upper.error.limit["understatements"]), "\n")
+				cat("\n- Upper Error Limit (Overstatements):\t\t", print.UEL(x, round(x$Results.Total$Net.upper.error.limit["overstatements"])))
+				cat("\n- Upper Error Limit (Understatements):\t\t", print.UEL(x, round(x$Results.Total$Net.upper.error.limit["understatements"])), "\n")
 			}
 			if (print.extraction) {
 				print.MUS.extraction.result(x, print.planning=print.planning)
 			}
 		}
 		if (error.rate=="high" || error.rate=="both" || (error.rate=="auto" && max(x$Results.Sample$Number.of.Errors)<20)) {
-			cat("\n- Upper Error Limit (High Error Rate):\t\t", x$high.error.rate$upper.error.limit)
+			cat("\n- Upper Error Limit (High Error Rate):\t\t", print.UEL(x, x$high.error.rate$upper.error.limit), "\t", is.acceptable(x$acceptable.high.error.rate))
 		}
-		cat("\n- Upper Error Limit (Moment Bound):\t\t", x$moment.bound)
+		cat("\n- Upper Error Limit (Moment Bound):\t\t", print.UEL(x, x$moment.bound), "\t", is.acceptable(x$acceptable.moment.bound))
+		cat("\n- Upper Error Limit (Binomial Bound):\t\t", print.UEL(x, x$binomial.bound), "\t", is.acceptable(x$acceptable.binomial.bound))
+		cat("\n- Upper Error Limit (Multinomial Bound):\t", print.UEL(x, x$multinomial.bound), "\t", is.acceptable(x$acceptable.multinomial.bound))
 
-		if (error.rate=="low" || error.rate=="both" || (error.rate=="auto" && max(x$Results.Sample$Number.of.Errors)<20)) {
-			cat("\n- Acceptable (Low Error Rate):\t\t\t", x$acceptable.low.error.rate)
-		}
-		if (error.rate=="high" || error.rate=="both" || (error.rate=="auto" && max(x$Results.Sample$Number.of.Errors)>=20)) {
-			cat("\n- Acceptable (High Error Rate):\t\t\t", x$acceptable.high.error.rate)
-		}
-		cat("\n- Acceptable (Moment Bound):\t\t\t", x$acceptable.moment.bound)
 	}
 	if (print.misstatements && sum(x$Results.Total$Number.of.Errors) > 0) {
 		cat("\n\nFactual Misstatements:\n")
@@ -94,4 +92,17 @@ print.advice.title <- function(already.printed=FALSE) {
 		already.printed <- TRUE
 	}
 	already.printed
+}
+
+is.acceptable <- function(x) {
+	ifelse(x, "Acceptable", "Not Acceptable")
+}
+
+print.UEL <- function(x, y, digits=2, format="f", ...) {
+	population.value <- x$book.value - sum(x$filled.high.values[,x$col.name.book.values])
+	ifelse(x$error.as.pct, paste0(formatC(100 * y / population.value, format=format, digits=digits, ...), "%"), y)
+}
+
+percent <- function(x, digits = 2, format = "f", ...) {
+  paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
 }
