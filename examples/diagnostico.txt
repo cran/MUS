@@ -1,0 +1,37 @@
+Informações da Sessão
+
+R version 3.4.0 (2017-04-21)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 7 x64 (build 7601) Service Pack 1
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=Portuguese_Brazil.1252  LC_CTYPE=Portuguese_Brazil.1252    LC_MONETARY=Portuguese_Brazil.1252 LC_NUMERIC=C                       LC_TIME=Portuguese_Brazil.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] MUS_0.1.5        animation_2.5    knitr_1.17       kableExtra_0.5.2 devtools_1.13.3  ggplot2_2.2.1    pander_0.6.1     rmarkdown_1.6   
+
+loaded via a namespace (and not attached):
+
+
+Versão do R
+
+               _                           
+platform       x86_64-w64-mingw32          
+arch           x86_64                      
+os             mingw32                     
+system         x86_64, mingw32             
+status                                     
+major          3                           
+minor          4.0                         
+year           2017                        
+month          04                          
+day            21                          
+svn rev        72570                       
+language       R                           
+version.string R version 3.4.0 (2017-04-21)
+nickname       You Stupid Darkness         

@@ -1,0 +1,40 @@
+---
+#title: "MUS"
+#author: Andre Guimaraes
+#date: "25/08/2017"
+header-includes:
+    - \usepackage[sfdefault]{roboto}
+    - \usepackage[T1]{fontenc}
+    - \usepackage[margins=raggedright]{floatrow}
+    - \usepackage{fancyhdr}
+    - \usepackage{lastpage}
+
+output:
+  pdf_document:
+  latex_engine: xelatex
+  toc: true
+  toc_depth: 1
+mainfont: roboto
+fontsize: 12pt
+
+
+geometry:
+  - tmargin=2cm
+  - bmargin=3cm
+  - lmargin=2cm
+  - rmargin=2cm
+documentclass: article
+classoption: a4paper
+---
+\pagestyle{fancyplain}
+\addtolength{\headheight}{\baselineskip}
+\lhead{\includegraphics[height=0.8cm]{logo.png}}
+\rhead{\fontsize{8}{10}\selectfont \textit{P\'agina}\\\fontsize{10}{12}\selectfont \smallskip\textbf{\thepage\ de \pageref{LastPage}}}
+\lfoot{\fontsize{8}{10}\selectfont \textit{Classif. Info.}\\\smallskip\textbf{Reservado}}
+\cfoot{\fontsize{8}{10}\selectfont \textit{Grau de Sigilo}\\\smallskip\textbf{Teste}}
+\rfoot{\fontsize{8}{10}\selectfont \textit{Unid. Gestora}\\\smallskip\textbf{AO}}
+\renewcommand{\headrulewidth}{0pt}
+
+```{r echo=FALSE, warning=FALSE, title=FALSE, comment='', results='asis', fig.show='asis', fig.height=3.2, fig.width=3.4, out.width=".49\\linewidth"}
+source("example.R")
+```

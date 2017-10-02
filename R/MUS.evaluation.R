@@ -39,7 +39,7 @@
 
 
 MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.audit.values="audit.value", col.name.riskweights=NULL,
-	interval.type="one-sided", print.advice=TRUE, tainting.order="decreasing"){
+	interval.type="one-sided", print.advice=TRUE, tainting.order="decreasing", experimental=FALSE){
 	# checking parameter extract, col.name.audit.values and col.name.riskweights
 	if (class(extract)!="MUS.extraction.result") stop("extract has to be an object from type MUS.extraction.result. Use function MUS.extraction to create such an object.")
 	if (!is.character(col.name.audit.values) | length(col.name.audit.values)!=1) stop("col.name.audit.values has to be a single character value (default book.value).")
@@ -156,7 +156,6 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	if (!is.element(col.name.audit.values, names(filled.high.values))) stop("The filled.high.values requires a column with the audit values and the name of this column has to be provided by parameter col.name.audit.values (default audit.value).")
 	if (!is.null(col.name.riskweights)) if (!is.element(col.name.riskweights, names(filled.high.values))) stop("If col.name.riskweights is not NULL, the filled.high.values requires a column with the col.name.riskweights and the name of this column has to be provided by parameter col.name.riskweights (default NULL).")
 
-
 	# evaluate high value items
 		errors <- filled.high.values[,extract$col.name.book.values]-filled.high.values[,col.name.audit.values]
 		if(is.null(col.name.riskweights)) {
@@ -217,15 +216,17 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	result <- c(extract, list(filled.sample=filled.sample, filled.high.values=filled.high.values, col.name.audit.values=col.name.audit.values, Overstatements.Result.Details=over, Understatements.Result.Details=under, Results.Sample=Results.Sample, Results.High.values=Results.High.values, Results.Total=Results.Total, acceptable=acceptable, tainting.order=tainting.order,
 	UEL.low.error.rate=UEL.low.error.rate, UEL.high.error.rate=UEL.high.error.rate,
 	acceptable.low.error.rate=acceptable.low.error.rate, acceptable.high.error.rate=acceptable.high.error.rate,
-	high.error.rate=high.error.rate, debug=debug), moment.bound=NA)
+	high.error.rate=high.error.rate, debug=debug))
 	class(result) <- "MUS.evaluation.result"
-	result$moment.bound <- moment.bound(result)
-	result$acceptable.moment.bound <- (result$moment.bound <= extract$tolerable.error)
-	if (require("DescTools")) {
-		result$binomial.bound <- binomial.bound(result)
-		result$acceptable.binomial.bound <- (result$binomial.bound <= extract$tolerable.error)
-		result$multinomial.bound <- multinomial.bound(result)
-		result$acceptable.multinomial.bound <- (result$multinomial.bound <= extract$tolerable.error)
+	if (experimental) {
+		result$moment.bound <- moment.bound(result)
+		result$acceptable.moment.bound <- (result$moment.bound <= extract$tolerable.error)
+		if (require("DescTools")) {
+			result$binomial.bound <- binomial.bound(result)
+			result$acceptable.binomial.bound <- (result$binomial.bound <= extract$tolerable.error)
+			result$multinomial.bound <- multinomial.bound(result)
+			result$acceptable.multinomial.bound <- (result$multinomial.bound <= extract$tolerable.error)
+		}
 	}
 	return(result)
 }

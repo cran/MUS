@@ -1,18 +1,30 @@
-print.MUS.planning.result <- function(x, print.title=TRUE, ...){
+print.MUS.planning.result <- function(x, print.title=TRUE, style="default", use.pander=FALSE, ...){
 	# Checking parameter
 	if (class(x)!="MUS.extraction.result" && class(x)!="MUS.evaluation.result" && class(x)!="MUS.planning.result") {
 		stop("x has to be an object from type MUS.extraction.result or MUS.evaluation.result or MUS.planning.result.")
 	}
 	if (print.title) {
-		cat("\nPlanning Parameters\n")
+		mus.title("Planning Parameters", use.pander=use.pander)
+
 	}
-	cat("\n- Confidence Level:\t\t\t\t", x$confidence.level)
-	cat("\n- Population size:\t\t\t\t", nrow(x$data))
-	cat("\n- Population amount:\t\t\t\t", x$book.value)
-	cat("\n- Expected Error in population:\t\t\t", x$expected.error)
-	cat("\n- Expected Error Rate:\t\t\t\t", percent(x$expected.error / x$book.value))
-	cat("\n- Tolerable Error (Materiality):\t\t", x$tolerable.error)
-	cat("\n- Tolerable Error Rate:\t\t\t\t", percent(x$tolerable.error / x$book.value))
-	cat("\n- Sample size:\t\t\t\t\t", x$n)
-	cat("\n- High Value Threshold:\t\t\t\t", round(x$High.value.threshold), "\n")
+	tbl <- matrix(nrow=4, ncol=4)
+	tbl[1,] = c("Expected Error", "-", value(x$expected.error), percent(x$expected.error / x$book.value))
+	tbl[2,] = c("Tolerable Error (Materiality)", "-", value(x$tolerable.error), percent(x$tolerable.error / x$book.value))
+	tbl[3,] = c("Confidence Level", "-", x$confidence.level, percent(x$confidence.level))
+	tbl[4,] = c("High Value Threshold", "-", value(x$High.value.threshold), percent(x$High.value.threshold / x$book.value))
+	colnames(tbl) <- c(paste0(c("Description", rep("&nbsp;",6)), collapse=""), "Items", "Value", "%")
+	x$tbl <- tbl
+	if (style=="report") {
+		pandoc.table(x$tbl, digits=2, justify="lrrr", split.tables=Inf, keep.trailing.zeros=TRUE)
+	} else {
+		cat("\n- Confidence Level:\t\t\t\t", x$confidence.level)
+		cat("\n- Population size:\t\t\t\t", nrow(x$data))
+		cat("\n- Population amount:\t\t\t\t", x$book.value)
+		cat("\n- Expected Error in population:\t\t\t", x$expected.error)
+		cat("\n- Expected Error Rate:\t\t\t\t", percent(x$expected.error / x$book.value))
+		cat("\n- Tolerable Error (Materiality):\t\t", x$tolerable.error)
+		cat("\n- Tolerable Error Rate:\t\t\t\t", percent(x$tolerable.error / x$book.value))
+		cat("\n- Sample size:\t\t\t\t\t", x$n)
+		cat("\n- High Value Threshold:\t\t\t\t", round(x$High.value.threshold), "\n")
+	}
 }
