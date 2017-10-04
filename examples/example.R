@@ -22,7 +22,7 @@ calc.all <- function(dados, conf_level=0.95, pct_tolerable=0.1, pct_expected=0.0
     dados$pct_expected <- pct_expected
   }
   if(!"stratum" %in% colnames(dados)) {
-    dados$stratum <- 1
+    dados$stratum <- ceiling(runif(n=nrow(dados), min=0, max=3))
   }
   dados$sizes=0
   sizes <- by(dados, dados$stratum, function(x) { calc.n(conf_level=x$conf_level, pct_tolerable=x$pct_tolerable, pct_expected=x$pct_expected) })
@@ -36,11 +36,12 @@ if (!exists("MUS.step")) {
 
 use.pander <- TRUE
 conf_level <- 0.95
+H <- 3  # number of strata
 if ( !"sdados" %in% ls() ) {
-  sdados = data.frame("stratum"=c(1),
-    "conf_level"=c(conf_level),
-    "pct_tolerable"=c(0.1),
-    "pct_expected"=c(0.05)
+  sdados = data.frame("stratum"=1:H,
+    "conf_level"=rep(conf_level, H),
+    "pct_tolerable"=rep(0.1, H),
+    "pct_expected"=rep(0.05, H)
   )
 }
 sdados <- calc.all(sdados)
@@ -60,8 +61,14 @@ if(!"nf" %in% colnames(dados)) {
   dados$nf <- ceiling(runif(n=nrow(dados), min=1, max=1000))
 }
 if(!"rubrica" %in% colnames(dados)) {
-  dados$rubrica <- ceiling(runif(n=nrow(dados), min=1, max=10))
+  dados$rubrica <- paste("rubrica ", ceiling(runif(n=nrow(dados), min=1, max=10)))
 }
+uniq.rubrica <- unique(dados$rubrica)
+dados$id.rubrica <- as.factor(match(dados$rubrica, uniq.rubrica))
+soma.rubrica <- c(by(dados$book.value, dados$id.rubrica, sum))
+qtd.rubrica <- c(by(dados$book.value, dados$id.rubrica, length))
+rubricas <- data.frame(id=as.numeric(names(soma.rubrica)), nome=uniq.rubrica[as.numeric(names(soma.rubrica))], qty=as.numeric(qtd.rubrica), value=as.numeric(soma.rubrica))
+
 if(!"uso" %in% colnames(dados)) {
   dados$uso <- ceiling(runif(n=nrow(dados), min=1, max=8))
 }
@@ -79,11 +86,16 @@ if(!"selected" %in% colnames(dados)) {
   dados$selected <- 0
 }
 
-plans <- list()
-extract <- list()
-audited <- list()
-audited.high <- list()
-evaluation <- list()
+if (!exists("inclui_total")) {
+  inclui_total <- FALSE
+}
+if (!inclui_total) {
+  plans <- list()
+  extract <- list()
+  audited <- list()
+  audited.high <- list()
+  evaluation <- list()
+}
 format_si <- function(...) {
   function(x) {
     limits <- c(1e0,   1e3, 1e6,   1e9,   1e12)
@@ -105,12 +117,40 @@ format_pct <- function(...) {
       x*100
   }
 }
+format_exp <- function(...) {
+  function(x) {
+    x <- exp(x)
+    limits <- c(1e0,   1e3, 1e6,   1e9,   1e12)
+    prefix <- c(" ",   "k", "M",   "B",   "T")
 
-strata = unique(sdados$stratum)
+    # Vector with array indices according to position in intervals
+    i <- findInterval(abs(x), limits)
+
+    # Set prefix to " " for very small values < 1e-24
+    i <- ifelse(i==0, which(limits == 1e0), i)
+
+    paste(format(round(x/limits[i], 1),
+                 trim=TRUE, scientific=FALSE, ...),
+          prefix[i])
+  }
+}
+
+strata <- unique(sdados$stratum)
+if (inclui_total && length(strata)>1) {
+  strata <- c(1, 1+strata)
+}
 cat("\n\n")
 for (s in strata) {
-  mus.title(paste("Stratum", s), level=1, use.pander=use.pander)
-  rs <- c(ifelse(s==0, TRUE, dados$stratum == s))
+  numStratum <- s
+  if (inclui_total && length(strata)>1) {
+    cat("\n\\newpage\n")
+    numStratum <- numStratum - 1
+  }
+  mus.title(ifelse(inclui_total && length(strata)>1&& s==1, paste0("Population (", length(strata), " strata)"), paste("Stratum", numStratum)), level=1, use.pander=use.pander)
+  rs <- (dados$stratum == numStratum)
+  if (inclui_total && length(strata)>1 && s==1) {
+      rs <- TRUE
+  }
 
   if (sum(rs)==0) {
     cat("\nno records...\n")
@@ -118,92 +158,188 @@ for (s in strata) {
 
     if (MUS.step > 1) {
 #      cat("\n\tplanning...\n")
-      plans[[s]] <- MUS.planning(data=dados[rs,],
-        tolerable.error=sum(sdados$pct_tolerable[s] * dados$book.value[rs]),
-        expected.error=sum(sdados$pct_expected[s] * dados$book.value[rs]),
-        n.min=mean(sdados$sizes[s]) )
+      if (!inclui_total) {
+        plans[[s]] <- MUS.planning(data=dados[rs,],
+          tolerable.error=sum(sdados$pct_tolerable[s] * dados$book.value[rs]),
+          expected.error=sum(sdados$pct_expected[s] * dados$book.value[rs]),
+          n.min=mean(sdados$sizes[s]) )
+      }
       print(plans[[s]], style="report", use.pander=use.pander)
     }
 
     if (MUS.step > 1) {
 #      cat("\n\textracting...\n")
-      extract[[s]] <- MUS.extraction(plans[[s]], seed=123, obey.n.as.min=TRUE)
-      dados$selected[dados$stratum == s] <- 0
-      dados$selected[dados$id %in% extract[[s]]$sample$id] <- 1
-      dados$selected[dados$id %in% extract[[s]]$high.values$id] <- 2
+      if (!inclui_total) {
+        extract[[s]] <- MUS.extraction(plans[[s]], seed=123, obey.n.as.min=TRUE)
+        dados$selected[dados$stratum == s] <- 0
+        dados$selected[dados$id %in% extract[[s]]$sample$id] <- 1
+        dados$selected[dados$id %in% extract[[s]]$high.values$id] <- 2
+      }
       print(extract[[s]], style="report", use.pander=use.pander)
     }
     if (MUS.step > 2) {
 #      cat("\n\tevaluating...\n")
       # Copy book values into a new column audit values
-      audited[[s]] <- extract[[s]]$sample
-      audited.high[[s]] <- extract[[s]]$high.values
-
       # Evaluate the sample, cache and print it
-      evaluation[[s]] <- MUS.evaluation(extract[[s]], audited[[s]], audited.high[[s]], print.advice=FALSE, tainting.order="decreasing", experimental=FALSE)
+      if (!inclui_total) {
+        audited[[s]] <- extract[[s]]$sample
+        audited.high[[s]] <- extract[[s]]$high.values
+        evaluation[[s]] <- MUS.evaluation(extract[[s]], audited[[s]], audited.high[[s]], print.advice=FALSE, tainting.order="decreasing", experimental=FALSE)
+      }
       print(evaluation[[s]], print.misstatements=FALSE, style="report", use.pander=use.pander)
       cat("\n")
+    }
+    if (MUS.step > 3) {
 #     plot(evaluation[[s]]$filled.sample$book.value, evaluation[[s]]$filled.sample$audit.value)
       cat("\n\\newpage\n")
       cat("\n## Gr&aacute;ficos\n")
       op<-par(mfrow=c(3,2))
       fsample <- evaluation[[s]]$filled.sample
-      g1 <- ggplot(fsample, aes(x=as.factor(rubrica), y=book.value)) +
-              geom_boxplot(fill=rgb(0.1,0.7,0.1,0.4)) +
-              scale_y_continuous(labels=format_si()) +
-              ggtitle("Boxplot - Sample rubrica") +
-              xlab("rubrica") + ylab("book.value")
-      print(g1)
-      g2 <- ggplot(fsample, aes(x=as.factor(uso), y=book.value)) +
-              geom_boxplot(fill=rgb(0.1,0.7,0.1,0.4)) +
-              scale_y_continuous(labels=format_si()) +
-              ggtitle("Boxplot - Sample itens de uso") +
-              xlab("uso") + ylab("book.value")
-      print(g2)
-      h1 <- ggplot(fsample, aes(x=book.value)) +
-              geom_histogram(bins = 6, color="white", fill=rgb(0.1,0.7,0.1,0.4)) +
-              scale_x_continuous(labels=format_si()) +
-              ggtitle("Histogram - Sample book.value") +
-              xlab("book.value") + ylab("count")
-      print(h1)
-      h2 <- ggplot(fsample, aes(x=audit.value)) +
-              geom_histogram(bins = 6, color="white", fill=rgb(0.1,0.1,0.7,0.4)) +
-              scale_x_continuous(labels=format_si()) +
-              ggtitle("Histogram - Sample audit.value") +
-              xlab("audit.value") + ylab("count")
-      print(h2)
+      pop <- evaluation[[s]]$data
+      comb.fsample <- rbind(data.frame(g=rgb(0,0.7,0.1,0.4), v=fsample$book.value), data.frame(g=rgb(0,0.1,0.7,0.4), v=fsample$audit.value))
+
+      tsoma.rubrica <- c(by(pop$book.value, pop$id.rubrica, sum))
+      tqtd.rubrica <- c(by(pop$book.value, pop$id.rubrica, length))
+      trubricas <- data.frame(id=as.numeric(names(tsoma.rubrica)),
+        nome=uniq.rubrica[as.numeric(names(tsoma.rubrica))],
+        qty=as.numeric(tqtd.rubrica),
+        value=as.numeric(tsoma.rubrica)
+      )
+
+      orubricas <- trubricas
+      trubricas$pct <- Vectorize(mus.percent)(trubricas$value / sum(trubricas$value))
+      trubricas$value <- Vectorize(mus.value)(trubricas$value)
+      comb.pop <- rbind(data.frame(g=rgb(0,0.7,0.1,0.4), v=pop$book.value), data.frame(g=rgb(0,0.1,0.7,0.4), v=pop$audit.value))
+      #trubricas <- data.frame(desc=paste0(trubricas$id, ") ", trubricas$nome), qty=trubricas$qty, value=trubricas$value, pct=percent(trubricas$value / sum(trubricas$value)))
+      colnames(trubricas) <- c("Id", paste0(c("Description", rep("&nbsp;",5)), collapse=""), "Items", "Value", "%")
+
+      pop.grid <- theme(
+        panel.background = element_rect(fill = "powderblue",
+                                      colour = "powderblue",
+                                      size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                      colour = "white"),
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid',
+                                      colour = "white")
+        )
+
+#      g2 <- ggplot(fsample, aes(x=as.factor(uso), y=book.value)) +
+#              geom_boxplot(fill=rgb(0,0.7,0.1,0.4)) +
+#              scale_y_continuous(labels=format_si()) +
+#              ggtitle("Boxplot - Sample itens de uso") +
+#              xlab("uso") + ylab("book.value")
+#      print(g2)
+      merge_histograms <- (length(unique(fsample$stratum)) > 1)
+      if (merge_histograms) {
+        h1 <- ggplot(comb.fsample, aes(x=v, fill=g)) +
+                geom_histogram(bins = 6, color="white", position="dodge") +
+                scale_x_continuous(labels=format_si()) +
+                scale_fill_identity() +
+                ggtitle("Sample & Audit value") +
+                xlab("book.value") + ylab("count")
+        print(h1)
+      } else {
+        h1 <- ggplot(fsample, aes(x=book.value)) +
+                geom_histogram(bins = 6, color="white", fill=rgb(0,0.7,0.1,0.4)) +
+                scale_x_continuous(labels=format_si()) +
+                ggtitle("Sample value") +
+                xlab("book.value") + ylab("count")
+        print(h1)
+        h2 <- ggplot(fsample, aes(x=audit.value)) +
+                geom_histogram(bins = 6, color="white", fill=rgb(0,0.1,0.7,0.4)) +
+                scale_x_continuous(labels=format_si()) +
+                ggtitle("Audit value") +
+                xlab("audit.value") + ylab("count")
+        print(h2)
+      }
       h3 <- ggplot(fsample[fsample$book.value != fsample$audit.value,], aes(x=(book.value - audit.value))) +
               geom_histogram(bins = 6, color="white", fill=rgb(0.7,0.1,0.1,0.4)) +
               scale_x_continuous(labels=format_si()) +
-              ggtitle("Histogram - Sample misstatement") +
+              ggtitle("Sample misstatement") +
               xlab("misstatement") + ylab("count")
       print(h3)
-      h4 <- ggplot(evaluation[[s]]$data, aes(x=book.value)) +
-              geom_histogram(bins = 6, color="white", fill=rgb(0.1,0.7,0.1,0.4)) +
-              scale_x_continuous(labels=format_si()) +
-              ggtitle("Histogram - Population book.value") +
-              xlab("book.value") + ylab("count")
-      mat.fornec <- c(by(evaluation[[s]]$data$book.value, evaluation[[s]]$data$fornec, sum))
-      df.fornec <- data.frame(fornec=names(mat.fornec), book.value=mat.fornec)
-      rownames(df.fornec) <- names(mat.fornec)
-      df.fornec <- df.fornec[order(-df.fornec$book.value),]
-      df.fornec$seq <- (1:nrow(df.fornec))/nrow(df.fornec)
-      df.fornec$csum <- cumsum(df.fornec$book.value)/evaluation[[s]]$book.value
-      #plot(cumsum(df.fornec$book.value/evaluation[[1]]$book.value))
-      h4 <- ggplot(df.fornec, aes(x=seq, y=csum)) +
-              geom_line(color=rgb(0.1,0.7,0.1,1), size=1) +
-              geom_point(data=df.fornec[ceiling(1+(nrow(df.fornec)-1)*seq(0, 1, 0.1)),], aes(x=seq, y=csum),
-                color="steelblue", size=3, shape=21, fill="steelblue", stroke=1.5) +
-              scale_y_continuous(labels=format_pct()) +
-              scale_x_continuous(labels=format_pct()) +
-              ggtitle("Cumsum - Population supplier") +
-              xlab("suppliers") + ylab("cumsum book.value")
+      h4 <- ggplot(pop, aes(x=book.value)) +
+              geom_histogram(bins = 6, color="white", fill=rgb(0,0.7,0.1,0.4)) +
+              pop.grid +
+#              scale_x_log10(labels=format_si()) +
+              scale_x_continuous(limits = quantile(pop$book.value, c(0.01, 0.99)), labels=format_si()) +
+              ggtitle("Population Value") +
+              xlab("value") + ylab("count")
+      suppressWarnings(print(h4))
+      if (merge_histograms) {
+          h5 <- ggplot(fsample, aes(x=as.factor(stratum), y=book.value)) +
+              geom_boxplot(fill=rgb(0,0.7,0.1,0.4), outlier.color=NA) +
+              scale_y_continuous(limits = quantile(fsample$book.value, c(0.01, 0.99)), labels=format_si()) +
+              ggtitle("Sample stratum") +
+              xlab("stratum") + ylab("book.value")
+        suppressWarnings(print(h5))
+      }
+     if (nrow(trubricas) <= 20) {
+        g1 <- ggplot(fsample, aes(x=as.factor(id.rubrica), y=book.value)) +
+                geom_boxplot(fill=rgb(0,0.7,0.1,0.4), outlier.color=NA) +
+                scale_y_continuous(limits = quantile(fsample$book.value, c(0.01, 0.99)), labels=format_si()) +
+                ggtitle("Sample rubrica") +
+                xlab("rubrica") + ylab("book.value")
+        suppressWarnings(print(g1))
+        g2 <- ggplot(pop, aes(x=as.factor(id.rubrica), y=book.value)) +
+                geom_boxplot(fill=rgb(0,0.7,0.1,0.4), outlier.color=NA) +
+                pop.grid +
+                scale_y_continuous(limits = quantile(pop$book.value, c(0.01, 0.99)), labels=format_si()) +
+                ggtitle("Population rubrica") +
+                xlab("rubrica") + ylab("book.value")
+        suppressWarnings(print(g2))
+     } else {
+       g1 <- ggplot(orubricas[order(-orubricas$value),], aes(x=1:nrow(orubricas), y=cumsum(value)/evaluation[[s]]$book.value)) +
+                geom_point(color=rgb(0,0.7,0.1,1), size=2.5) +
+                scale_y_continuous(labels=format_pct()) +
+                ggtitle("Cumsum - Rubricas - Sample") +
+                xlab("rubricas") + ylab("cumsum book.value")
+       print(g1)
+       g2 <- ggplot(rubricas[order(-rubricas$value),], aes(x=1:nrow(rubricas), y=cumsum(value)/evaluation[[s]]$book.value)) +
+                geom_point(color=rgb(0,0.7,0.1,1), size=2.5) +
+                pop.grid +
+                scale_y_continuous(labels=format_pct()) +
+                ggtitle("Cumsum - Rubricas - Population") +
+                xlab("rubricas") + ylab("cumsum book.value")
+       print(g2)
+     }
 
-      print(h4)
+      # print cumsum of suppliers
+      if (FALSE) {
+        mat.fornec <- c(by(evaluation[[s]]$data$book.value, evaluation[[s]]$data$fornec, sum))
+        df.fornec <- data.frame(fornec=names(mat.fornec), book.value=mat.fornec)
+        rownames(df.fornec) <- names(mat.fornec)
+        df.fornec <- df.fornec[order(-df.fornec$book.value),]
+        df.fornec$seq <- (1:nrow(df.fornec))/nrow(df.fornec)
+        df.fornec$csum <- cumsum(df.fornec$book.value)/evaluation[[s]]$book.value
+        #plot(cumsum(df.fornec$book.value/evaluation[[1]]$book.value))
+        h4 <- ggplot(df.fornec, aes(x=seq, y=csum)) +
+                geom_line(color=rgb(0,0.7,0.1,1), size=1) +
+                geom_point(data=df.fornec[ceiling(1+(nrow(df.fornec)-1)*seq(0, 1, 0.1)),], aes(x=seq, y=csum),
+                  color="steelblue", size=3, shape=21, fill="steelblue", stroke=1.5) +
+                scale_y_continuous(labels=format_pct()) +
+                scale_x_continuous(labels=format_pct()) +
+                ggtitle("Cumsum - Population supplier") +
+                xlab("suppliers") + ylab("cumsum book.value")
 
+        print(h4)
+      }
       par(op)
+      cat("\n")
+
+      if (nrow(trubricas)>9) {
+        cat("\n\\newpage\n")
+      }
+      mus.title("Rubricas", use.pander=TRUE, level=2)
+      pandoc.table(trubricas, justify="clrrr")
+      if (inclui_total && s==1) {
+        mus.title("Anexos", use.pander=TRUE, level=2)
+        cat("\n- dados.csv")
+        cat("\n- script.R")
+        cat("\n- diagnostico.txt\n\n")
+      }
     }
-    if (MUS.step > 3) {
+    if (MUS.step > 4) {
 
       cat("\n\n\tre-evaluating...\n\n")
       # extract[[s]]$confidence.level=0.95
@@ -239,7 +375,6 @@ if (FALSE) {
   mus.title(paste("Vers&otilde;es"), level=3, use.pander=use.pander)
   print(version)
 }
-
 moment.bound(c(rep(0, 96), -.16, .04, .18, .47))
 moment.bound(c(rep(0, 95), -75, -25, 25, 40, 60, 75)/100)
 moment.bound(c(rep(0, 96), 75, -60, -40, -25, 99)/100)

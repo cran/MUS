@@ -1,4 +1,4 @@
-MUS.extraction <- function(plan, start.point=NULL, seed=NULL, obey.n.as.min=FALSE){
+MUS.extraction <- function(plan, start.point=NULL, seed=NULL, obey.n.as.min=FALSE, combined=FALSE){
 	# check parameters plan, seed and obey.n.as.min
 	if (class(plan)!="MUS.planning.result") stop("plan has to be an object from type MUS.planning.result. Use function MUS.planning to create such an object.")
 	if (!is.null(seed)) if(!is.numeric(seed) | round(seed)!=seed | length(seed)!=1 | seed<0) stop("seed has to be an integer value greater or equal than 0.")
@@ -6,7 +6,7 @@ MUS.extraction <- function(plan, start.point=NULL, seed=NULL, obey.n.as.min=FALS
 
 	# set seed according to user input
 	if (!is.null(seed)) set.seed(seed)
-   
+
 	# split data into high values and population from which will be sampled
 	high.values <- subset(plan$data, with(plan$data, get(plan$col.name.book.values))>=plan$High.value.threshold)
 	sample.population <- subset(plan$data, with(plan$data, get(plan$col.name.book.values))<plan$High.value.threshold)
@@ -32,24 +32,24 @@ MUS.extraction <- function(plan, start.point=NULL, seed=NULL, obey.n.as.min=FALS
 	# fixed interval selection method
 	# if no start point is provided, set a random one
 	if (is.null(start.point)) start.point <- runif(n=1, min=0, max=interval)
-	
+
 	# calculate the units to be sampled, one in each interval
 	samplingunits <- round(start.point+0:plan$n*round(interval, digits=2))
 
 	# add running sum
 	sample.population <- cbind(sample.population, MUS.total=cumsum(sample.population[, plan$col.name.book.values]))
-	
+
 	# cut samplingunits if they are above the maximum book value
 	samplingunits <- subset(samplingunits, samplingunits<=sum(sample.population[, plan$col.name.book.values]))
-	
+
 	# draw sample and add MUS.hit
 	sample <- cbind(sample.population[findInterval(samplingunits, c(0,sample.population$MUS.total)),], MUS.hit=samplingunits)
-	
+
 	# calculate revised sampling interval (used for evaluation of the sample population)
 	interval <- sum(sample.population[,plan$col.name.book.values])/nrow(sample)
 
 	# return all results, parameters and planning object as list for further processing
-	result <- c(plan, list(start.point=start.point, seed=seed, obey.n.as.min=obey.n.as.min, high.values=high.values, sample.population=sample.population, sampling.interval=interval, sample=sample))
+	result <- c(plan, list(start.point=start.point, seed=seed, obey.n.as.min=obey.n.as.min, high.values=high.values, sample.population=sample.population, sampling.interval=interval, sample=sample, combined=combined))
 	class(result) <- "MUS.extraction.result"
 	return(result)
 }

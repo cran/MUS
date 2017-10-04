@@ -55,7 +55,7 @@ calc.n.conservative <- function(conf_level, tolerable.error, expected.error, boo
 }
 
 MUS.planning <- function(data, col.name.book.values="book.value", confidence.level=.95, tolerable.error, expected.error,
-	n.min=0, errors.as.pct=FALSE, conservative=FALSE){
+	n.min=0, errors.as.pct=FALSE, conservative=FALSE, combined=FALSE){
 	# check parameters data and col.name.book.values
 	if (!is.data.frame(data) | is.matrix(data)) stop("Data needs to be a data frame or a matrix but it is not.")
 	if (!is.character(col.name.book.values) | length(col.name.book.values)!=1 | !is.element(col.name.book.values, names(data))) stop("The data frame requires at least a column with the book values and the name of this column has to be provided by parameter col.name.book.values (default book.value).")
@@ -122,7 +122,7 @@ MUS.planning <- function(data, col.name.book.values="book.value", confidence.lev
 	tol.taint <- expected.error/book.value*n.final # calculate tolerable taintings (maximal number of full overstatements that will be acceptable in the sample)
 
 	# return all results, parameters and data as list for further processing
-	result <- list(data=data, col.name.book.values=col.name.book.values, confidence.level=confidence.level, tolerable.error=tolerable.error, expected.error=expected.error, book.value=book.value, n=n.final, High.value.threshold=interval, tolerable.taintings=tol.taint)
+	result <- list(data=data, col.name.book.values=col.name.book.values, confidence.level=confidence.level, tolerable.error=tolerable.error, expected.error=expected.error, book.value=book.value, n=n.final, High.value.threshold=interval, tolerable.taintings=tol.taint, combined=combined)
 	class(result) <- "MUS.planning.result"
 	return(result)
 }

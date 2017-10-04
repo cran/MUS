@@ -35,24 +35,6 @@ moment.bound <- function(x, confidence.level=0.95, as.percentage=FALSE, include.
     ifelse(mult == 0, CB*100, (1 + CB) * (mult))
 }
 
-combine.evaluations <- function(lx) {
-    if (!is.list(lx) && length(lx)<1) {
-        stop("lx must be a list with one or more MUS.evaluation.result objects.")
-    }
-    s <- 1
-    x <- lx[[s]]
-    if (length(lx)>1) {
-        for (s in 2:length(lx)) {
-            y <- lx[[s]]
-            x$sample <- rbind(x$sample, y$sample)
-            x$filled.sample <- rbind(x$filled.sample, y$filled.sample)
-            x$filled.high.values <- rbind(x$filled.high.values, y$filled.high.values)
-            x$book.value <- x$book.value + y$book.value
-        }
-    }
-    x
-}
-
 binomial.bound <- function(x, target="qty", as.percentage=FALSE, include.high.values=TRUE, confidence.level=0.95) {
     if (!class(x)=="MUS.evaluation.result" && !is.vector(x)) stop("x has to be a vector or an object of type MUS.evaluation.result. Use function MUS.evaluate to create such an object.")
     if (class(x)=="MUS.evaluation.result") {

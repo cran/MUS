@@ -8,10 +8,11 @@ print.MUS.planning.result <- function(x, print.title=TRUE, style="default", use.
 
 	}
 	tbl <- matrix(nrow=4, ncol=4)
-	tbl[1,] = c("Expected Error", "-", value(x$expected.error), percent(x$expected.error / x$book.value))
-	tbl[2,] = c("Tolerable Error (Materiality)", "-", value(x$tolerable.error), percent(x$tolerable.error / x$book.value))
-	tbl[3,] = c("Confidence Level", "-", x$confidence.level, percent(x$confidence.level))
-	tbl[4,] = c("High Value Threshold", "-", value(x$High.value.threshold), percent(x$High.value.threshold / x$book.value))
+	tbl[1,] = c("Expected Error", "-", mus.value(x$expected.error), mus.percent(x$expected.error / x$book.value))
+	tbl[2,] = c("Tolerable Error (Materiality)", "-", mus.value(x$tolerable.error), mus.percent(x$tolerable.error / x$book.value))
+	tbl[3,] = c("Confidence Level", "-", x$confidence.level, mus.percent(x$confidence.level))
+	tbl[4,] = c("High Value Threshold", "-", mus.value(x$High.value.threshold),
+		ifelse(is.numeric(x$High.value.threshold), mus.percent(x$High.value.threshold / x$book.value), "-"))
 	colnames(tbl) <- c(paste0(c("Description", rep("&nbsp;",6)), collapse=""), "Items", "Value", "%")
 	x$tbl <- tbl
 	if (style=="report") {
@@ -21,9 +22,9 @@ print.MUS.planning.result <- function(x, print.title=TRUE, style="default", use.
 		cat("\n- Population size:\t\t\t\t", nrow(x$data))
 		cat("\n- Population amount:\t\t\t\t", x$book.value)
 		cat("\n- Expected Error in population:\t\t\t", x$expected.error)
-		cat("\n- Expected Error Rate:\t\t\t\t", percent(x$expected.error / x$book.value))
+		cat("\n- Expected Error Rate:\t\t\t\t", mus.percent(x$expected.error / x$book.value))
 		cat("\n- Tolerable Error (Materiality):\t\t", x$tolerable.error)
-		cat("\n- Tolerable Error Rate:\t\t\t\t", percent(x$tolerable.error / x$book.value))
+		cat("\n- Tolerable Error Rate:\t\t\t\t", mus.percent(x$tolerable.error / x$book.value))
 		cat("\n- Sample size:\t\t\t\t\t", x$n)
 		cat("\n- High Value Threshold:\t\t\t\t", round(x$High.value.threshold), "\n")
 	}

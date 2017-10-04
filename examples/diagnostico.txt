@@ -13,7 +13,7 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] MUS_0.1.5        animation_2.5    knitr_1.17       kableExtra_0.5.2 devtools_1.13.3  ggplot2_2.2.1    pander_0.6.1     rmarkdown_1.6   
+[1] MUS_0.1.5        rlist_0.4.6.1    animation_2.5    knitr_1.17       kableExtra_0.5.2 devtools_1.13.3  ggplot2_2.2.1    pander_0.6.1     rmarkdown_1.6   
 
 loaded via a namespace (and not attached):
 

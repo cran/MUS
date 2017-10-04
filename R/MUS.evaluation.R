@@ -39,7 +39,7 @@
 
 
 MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.audit.values="audit.value", col.name.riskweights=NULL,
-	interval.type="one-sided", print.advice=TRUE, tainting.order="decreasing", experimental=FALSE){
+	interval.type="one-sided", print.advice=TRUE, tainting.order="decreasing", experimental=FALSE, combined=FALSE){
 	# checking parameter extract, col.name.audit.values and col.name.riskweights
 	if (class(extract)!="MUS.extraction.result") stop("extract has to be an object from type MUS.extraction.result. Use function MUS.extraction to create such an object.")
 	if (!is.character(col.name.audit.values) | length(col.name.audit.values)!=1) stop("col.name.audit.values has to be a single character value (default book.value).")
@@ -188,11 +188,15 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	ratios_mean <- mean(ratios)
 	ratios_sd <- sd(ratios)
 	N <- nrow(extract$data) - nrow(filled.high.values)
-	Y <- sum(extract$data[,extract$col.name.book.values]) - sum(filled.high.values[,extract$col.name.book.values])
 	R <- ifelse(interval.type == "two-sided",  1 - (1- extract$confidence.level) / 2, extract$confidence.level)
 	U <- qt(R, qty_errors - 1)
-
-    high.values.error <- sum(filled.high.values[,extract$col.name.book.values]-filled.high.values[,col.name.audit.values])
+	if (class(filled.high.values)=="data.frame") {
+		Y <- sum(extract$data[,extract$col.name.book.values]) - sum(filled.high.values[,extract$col.name.book.values])
+		high.values.error <- sum(filled.high.values[,extract$col.name.book.values]-filled.high.values[,col.name.audit.values])
+	} else {
+		Y <- sum(extract$data[,extract$col.name.book.values])
+		high.values.error <- 0
+	}
 	most.likely.error <- ratios_mean * Y
 	precision <- U * Y * ratios_sd / sqrt(nrow(filled.sample))
 	UEL.high.error.rate <- most.likely.error + precision * sign(most.likely.error) + high.values.error
@@ -216,7 +220,7 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	result <- c(extract, list(filled.sample=filled.sample, filled.high.values=filled.high.values, col.name.audit.values=col.name.audit.values, Overstatements.Result.Details=over, Understatements.Result.Details=under, Results.Sample=Results.Sample, Results.High.values=Results.High.values, Results.Total=Results.Total, acceptable=acceptable, tainting.order=tainting.order,
 	UEL.low.error.rate=UEL.low.error.rate, UEL.high.error.rate=UEL.high.error.rate,
 	acceptable.low.error.rate=acceptable.low.error.rate, acceptable.high.error.rate=acceptable.high.error.rate,
-	high.error.rate=high.error.rate, debug=debug))
+	high.error.rate=high.error.rate, debug=debug, combined=combined))
 	class(result) <- "MUS.evaluation.result"
 	if (experimental) {
 		result$moment.bound <- moment.bound(result)

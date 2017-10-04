@@ -12,51 +12,83 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 	if(sum(x$Results.Total$Number.of.Errors)==0) {
 		cat("\n- No misstatements found. Thus, the projected misstatememt is 0.")
 	} else {
-		population.value <- x$book.value - sum(x$filled.high.values[,x$col.name.book.values])
 		sample.misstatements <- x$filled.sample[,x$col.name.book.values] - x$filled.sample[,x$col.name.audit.values]
 		res$sample.book.value <- sum(x$filled.sample[,x$col.name.book.values])
-		res$sample.over.qty <- x$Results.Total$Number.of.Errors["overstatements"]
-		res$sample.under.qty <- x$Results.Total$Number.of.Errors["understatements"]
+		res$audited.over.qty <- x$Results.Total$Number.of.Errors["overstatements"]
+		res$audited.under.qty <- x$Results.Total$Number.of.Errors["understatements"]
+		res$sample.over.qty <- x$Results.Sample$Number.of.Errors["overstatements"]
+		res$sample.under.qty <- x$Results.Sample$Number.of.Errors["understatements"]
+
 		res$sample.over.value <- sum(sample.misstatements[sample.misstatements>0])
 		res$sample.under.value <- sum(sample.misstatements[sample.misstatements<0])
-		res$sample.over.rate <- percent(res$sample.over.value / res$sample.book.value)
-		res$sample.under.rate <- percent(res$sample.under.value / res$sample.book.value)
-		res$sample.over.uel <- x$Results.Total$Net.upper.error.limit["overstatements"]
-		res$sample.under.uel <- x$Results.Total$Net.upper.error.limit["understatements"]
+		res$sample.over.rate <- mus.percent(res$sample.over.value / res$sample.book.value)
+		res$sample.under.rate <- mus.percent(res$sample.under.value / res$sample.book.value)
+
+		res$audited.over.uel <- x$Results.Total$Net.upper.error.limit["overstatements"]
+		res$audited.under.uel <- x$Results.Total$Net.upper.error.limit["understatements"]
+		res$sample.over.uel <- x$Results.Sample$Net.upper.error.limit["overstatements"]
+		res$sample.under.uel <- x$Results.Sample$Net.upper.error.limit["understatements"]
+
 		res$sample.miss.qty <- max(x$Results.Sample$Number.of.Errors)
 		res$sample.miss.value <- sum(sample.misstatements)
-		res$sample.miss.rate <- percent(res$sample.miss.value/res$sample.book.value)
-
-		res$high.book.value <- sum(x$filled.high.values[,x$col.name.book.values])
-		res$high.miss.qty <- sum(x$filled.high.values[,x$col.name.book.values] != x$filled.high.values[,x$col.name.audit.values])
-		res$high.miss.value <- sum(x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values])
-		res$high.miss.rate <-percent(res$high.miss.value/res$high.book.value)
+		res$sample.miss.rate <- mus.percent(res$sample.miss.value/res$sample.book.value)
+		if (class(x$filled.high.values)=="data.frame") {
+			high.misstatements <- x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values]
+			res$high.book.value <- sum(x$filled.high.values[,x$col.name.book.values])
+			res$high.miss.qty <- sum(high.misstatements != 0)
+			res$high.miss.value <- sum(high.misstatements)
+			population.value <- x$book.value - sum(x$filled.high.values[,x$col.name.book.values])
+			res$high.over.value <- sum(high.misstatements[high.misstatements>0])
+			res$high.under.value <- sum(high.misstatements[high.misstatements<0])
+			res$high.over.qty <- x$Results.High.values$Number.of.Errors["overstatements"]
+			res$high.under.qty <- x$Results.High.values$Number.of.Errors["understatements"]
+			res$audited.over.value <- res$sample.over.value + res$high.over.value
+			res$audited.under.value <- res$sample.under.value + res$high.under.value
+		} else {
+			population.value <- x$book.value
+			res$high.book.value <- 0
+			res$high.miss.qty <- 0
+			res$high.miss.value <- 0
+			res$audited.over.value <- res$sample.over.value
+			res$audited.under.value <- res$sample.under.value
+		}
 		res$audited.miss.qty <- res$sample.miss.qty + res$high.miss.qty
 		res$audited.miss.value <- res$sample.miss.value + res$high.miss.value
 		res$audited.book.value <- res$sample.book.value + res$high.book.value
-		res$audited.miss.rate <-percent(res$audited.miss.value/res$audited.book.value)
+		res$audited.over.rate <- mus.percent(res$audited.over.value / res$audited.book.value)
+		res$audited.under.rate <- mus.percent(res$audited.under.value / res$audited.book.value)
+
+		res$high.miss.rate <- ifelse(res$high.book.value>0, mus.percent(res$high.miss.value/res$high.book.value), "-")
+		res$audited.miss.rate <- mus.percent(res$audited.miss.value/res$audited.book.value)
 		res$most.likely.error.value <- x$Results.Total$Net.most.likely.error[1]
-		res$most.likely.error.rate <- percent(res$most.likely.error.value / population.value)
+		res$most.likely.error.rate <- mus.percent(res$most.likely.error.value / population.value)
 		res$tainting.order <- x$tainting.order
 		res$UEL.lowrate.value <- x$UEL.low.error.rate
-		res$UEL.lowrate.rate <- percent(res$UEL.lowrate.value / population.value)
+		res$UEL.lowrate.rate <- mus.percent(res$UEL.lowrate.value / population.value)
 		res$UEL.highrate.value <- x$UEL.high.error.rate
-		res$UEL.highrate.rate <- percent(res$UEL.highrate.value / population.value)
+		res$UEL.highrate.rate <- mus.percent(res$UEL.highrate.value / population.value)
 
-		tbl <- matrix(nrow=8, ncol=4)
-		tbl[1,] = c("Sample Misstatements", res$sample.miss.qty , value(res$sample.miss.value), res$sample.miss.rate)
-		tbl[2,] = c("Sample Overstatements", res$sample.over.qty , value(res$sample.over.value), res$sample.over.rate)
-		tbl[3,] = c("Sample Understatements", res$sample.under.qty , value(res$sample.under.value), res$sample.under.rate)
-		tbl[4,] = c("High Value Misstatements", res$high.miss.qty , value(res$high.miss.value), res$high.miss.rate)
-		tbl[5,] = c("Audited Misstatements", res$audited.miss.qty , value(res$audited.miss.value), res$audited.miss.rate)
-		tbl[6,] = c("Most Likely Error", "-" , value(res$most.likely.error.value), bold(res$most.likely.error.rate))
+		tbl <- matrix(nrow=9, ncol=4)
+		tbl[1,] = c("Audited Misstatements", res$audited.miss.qty , mus.value(res$audited.miss.value), res$audited.miss.rate)
+		tbl[2,] = c("Audited Overstatements", res$audited.over.qty , mus.value(res$audited.over.value), res$audited.over.rate)
+		tbl[3,] = c("Audited Understatements", res$audited.under.qty , mus.value(res$audited.under.value), res$audited.under.rate)
+		tbl[4,] = c("Sample Misstatements", res$sample.miss.qty , mus.value(res$sample.miss.value), res$sample.miss.rate)
+		tbl[5,] = c("High Value Misstatements", res$high.miss.qty , mus.value(res$high.miss.value), res$high.miss.rate)
+		tbl[7,] = c("UEL (Low Error Rate)", "-" , mus.value(res$UEL.lowrate.value), res$UEL.lowrate.rate)
+		tbl[8,] = c("UEL (High Error Rate)", "-" , mus.value(res$UEL.highrate.value), res$UEL.highrate.rate)
 		if (res$sample.miss.qty > 20) {
-			tbl[7,] = c("Upper Error Limit (Low Error Rate)", "-" , value(res$UEL.lowrate.value), res$UEL.lowrate.rate)
-			tbl[8,] = c("Upper Error Limit (High Error Rate)", "*" , value(res$UEL.highrate.value), bold(res$UEL.highrate.rate))
+			tbl[6,] = c("Upper Error Limit (Final)", "-" , mus.value(res$UEL.highrate.value), res$UEL.highrate.rate)
 		} else {
-			tbl[7,] = c("Upper Error Limit (Low Error Rate)", "*", value(res$UEL.lowrate.value), bold(res$UEL.lowrate.rate))
-			tbl[8,] = c("Upper Error Limit (High Error Rate)", "-" , value(res$UEL.highrate.value), res$UEL.highrate.rate)
+			tbl[6,] = c("Upper Error Limit (Final)", "-" , mus.value(res$UEL.lowrate.value), res$UEL.lowrate.rate)
 		}
+		tbl[9,] = c("Most Likely Error", "-" , mus.value(res$most.likely.error.value), res$most.likely.error.rate)
+#		tbl[2,] <- Vectorize(mus.italic)(tbl[2,])
+#		tbl[3,] <- Vectorize(mus.italic)(tbl[3,])
+#		tbl[7,] <- Vectorize(mus.italic)(tbl[7,])
+#		tbl[8,] <- Vectorize(mus.italic)(tbl[8,])
+		tbl[6,] <- Vectorize(mus.bold)(tbl[6,])
+		tbl[9,] <- Vectorize(mus.bold)(tbl[9,])
+		tbl[1,] <- Vectorize(mus.bold)(tbl[1,])
 		colnames(tbl) <- c(paste0(c("Description", rep("&nbsp;",6)), collapse=""), "Items", "Value", "%")
 		x$tbl <- rbind(x$tbl, tbl)
 		if (style=="report") {
@@ -118,10 +150,26 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 		advised <- FALSE
 		if(!x$acceptable) {
 			advised <- print.advice.title(advised, use.pander=use.pander)
-			cat("\n* You have to get further audit evidence or extend the sample.")
-			cat("\n* You have to book the MLE if it is material.")
+			if (x$combined) {
+				if (x$qty.accepted > 0) {
+					cat("\n* Some strata are acceptable.")
+				} else {
+					cat("\n* No strata are acceptable.")
+				}
+				cat("\n* You have to get further audit evidence or extend the sample.")
+				cat("\n* You have to book the MLE if it is material.")
+			} else {
+				cat("\n* Stratum results are not acceptable.")
+				cat("\n* You have to get further audit evidence or extend the sample.")
+				cat("\n* You have to book the MLE if it is material.")
+			}
 		} else {
-			cat("\n* Audit evidence is sufficient. Results are acceptable.")
+			if (x$combined) {
+				cat("\n* All strata results are acceptable.")
+			} else {
+				cat("\n* Stratum results are acceptable.")
+			}
+			cat("\n* Audit evidence is sufficient.")
 		}
 		if ((error.rate=="high" || error.rate=="both") && max(x$Results.Sample$Number.of.Errors) < 20) {
 			advised <- print.advice.title(advised, use.pander=use.pander)
@@ -164,16 +212,14 @@ print.UEL <- function(x, y, digits=2, format="f", ...) {
 	ifelse(x$error.as.pct, paste0(formatC(100 * y / population.value, format=format, digits=digits, ...), "%"), y)
 }
 
-percent <- function(x, digits = 2, format = "f", ...) {
+mus.percent <- function(x, digits = 2, format = "f", ...) {
   # paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
-  formatC(100 * x, format = format, digits = digits, ...)
+  ifelse(is.numeric(x), formatC(100 * x, format = format, digits = digits, ...), "-")
 }
-value <- function(x, digits=2, big.mark=NULL, decimal.mark=getOption("OutDec"), ...) {
+mus.value <- function(x, digits=2, big.mark=NULL, decimal.mark=getOption("OutDec"), ...) {
   # paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
-  if (is.null(big.mark)) {
-	  big.mark = ifelse(decimal.mark==".", ",", ".")
-  }
-  format(round(x, digits), nsmall=digits, big.mark=big.mark, decimal.mark=decimal.mark, ...)
+  big.mark = ifelse(is.null(big.mark), ifelse(decimal.mark==".", ",", "."), big.mark)
+  ifelse(is.numeric(x), format(round(x, digits), nsmall=digits, big.mark=big.mark, decimal.mark=decimal.mark, ...), "-")
 }
 mus.title <- function(x, use.pander=FALSE, level=2) {
 	if (use.pander && require("pander")) {
@@ -183,6 +229,10 @@ mus.title <- function(x, use.pander=FALSE, level=2) {
 	}
 }
 
-bold <- function(x) {
-	paste0("**",x,"**")
+mus.italic <- function(x) {
+	paste0("_",x,"_")
+}
+
+mus.bold <- function(x) {
+	paste0("__",x,"__")
 }
