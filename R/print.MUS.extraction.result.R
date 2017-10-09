@@ -23,7 +23,9 @@ print.MUS.extraction.result <- function(x, print.title=TRUE, print.planning=FALS
 
 	colnames(tbl) <- c(paste0(c(gettext("Description", domain=dm), rep("&nbsp;",6)), collapse=""),
 		gettext("Items", domain=dm), gettext("Value", domain=dm), "%")
-	x$tbl <- rbind(x$tbl, tbl)
+
+	x$tbl <- tbl
+
 	if (style=="report") {
 		pander::pandoc.table(x$tbl, digits=2, justify="lrrr", split.tables=Inf, keep.trailing.zeros=TRUE)
 	} else {

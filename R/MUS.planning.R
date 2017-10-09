@@ -20,25 +20,25 @@
 	# However, if account value is larger, this is the maximal possible sampling size.
 }
 
-.MUSFactor <- function(risk, e) {
+MUS.factor <- function(confidence.level, pct.ratio) {
 # calculate MUS Factor
 # Based on Technical Notes on the AICPA Audit Guide Audit Sampling, Trevor Stewart, AICPA, 2012
   erro = -1
   resp = erro
   max_iter=1000
   solved=0.000001
-  if (risk <= 0 || risk >= 1 || e < 0 || e >= 1) {
+  if (confidence.level <= 0 || confidence.level >= 1 || pct.ratio < 0 || pct.ratio >= 1) {
     stop("Parameters must be between 0 and 1.")
   } else {
-    F = qgamma(risk, 1, 1)
-    if (e == 0) {
+    F = qgamma(confidence.level, 1, 1)
+    if (pct.ratio == 0) {
       resp = F
     } else {
       F1 = 0
       i = 0
       while ((abs(F1-F)>solved) && (i<=max_iter)) {
         F1 = F
-        F = qgamma(risk, 1 + e * F1, 1)
+        F = qgamma(confidence.level, 1 + pct.ratio * F1, 1)
         i = i + 1
       }
       resp = ifelse((abs(F1-F)<=solved), F, erro)
@@ -47,11 +47,11 @@
   resp
 }
 
-.calc.n.conservative <- function(conf_level, tolerable.error, expected.error, book.value) {
+MUS.calc.n.conservative <- function(confidence.level, tolerable.error, expected.error, book.value) {
 # calculate n consevatively, as per AICPA audit guide
-  pct_ratio = expected.error / tolerable.error
-  conf_factor = ceiling(.MUSFactor(conf_level, pct_ratio)*100)/100
-  ceiling(conf_factor / tolerable.error / book.value)
+  pct.ratio = expected.error / tolerable.error
+  conf.factor = ceiling(MUS.factor(confidence.level, pct.ratio)*100)/100
+  ceiling(conf.factor / tolerable.error / book.value)
 }
 
 MUS.planning <- function(data, col.name.book.values="book.value", confidence.level=.95, tolerable.error, expected.error,
@@ -115,7 +115,7 @@ MUS.planning <- function(data, col.name.book.values="book.value", confidence.lev
 	n.final <- max(n.optimal, n.min) # take greater value of optimal n or predefined minimum sample size
 
 	if (conservative) {
-		n.final = max(n.final, .calc.n.conservative(confidence.level, tolerable.error, expected.error, book.value))
+		n.final = max(n.final, MUS.calc.n.conservative(confidence.level, tolerable.error, expected.error, book.value))
 	}
 
 	interval <- book.value/n.final # calculate sampling interval

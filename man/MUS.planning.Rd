@@ -26,7 +26,8 @@ tolerable.error, expected.error, n.min, errors.as.pct, conservative, combined)
     population in Monetary Units.}
   \item{n.min}{Minimum sample size that should be used. Default is 0.}
   \item{errors.as.pct}{Boolean. Tolerable and Expected error informed as percentages. Default is False.}
-  \item{conservative}{Boolean. Use conservative algorithm for sample size calculation (i.e., gamma-based, AICPA compatible).}
+  \item{conservative}{Boolean. If true, use greater sample size between normal calculation and
+     conservative algorithm (i.e., gamma-based, AICPA compatible).}
   \item{combined}{Boolean. Marks the dataset as a combination of multiple strata. Default is "FALSE".}
 }
 \value{

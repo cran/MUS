@@ -15,7 +15,7 @@ panderOptions('digits', 19)
 
 calc.n <- function(conf_level, pct_tolerable, pct_expected) {
   pct_ratio <- pct_expected / pct_tolerable
-  conf_factor <- ceiling(MUSFactor(conf_level, pct_ratio)*100)/100
+  conf_factor <- ceiling(MUS.factor(conf_level, pct_ratio)*100)/100
   n <- ceiling(conf_factor / pct_tolerable)
   n
 }
@@ -170,7 +170,7 @@ for (s in strata) {
     }
     numStratum <- numStratum - 1
   }
-  mus.title(ifelse(inclui_total & length(strata)>1 & s==1,
+  MUS:::.title(ifelse(inclui_total & length(strata)>1 & s==1,
     paste0(gettext("Population", domain=dm), " (", length(strata)-1, " ", gettext("strata", domain=dm), ")"),
     paste(gettext("Stratum", domain=dm), numStratum)), level=1, use.pander=use.pander)
   rs <- (dados$stratum == numStratum)
@@ -234,8 +234,8 @@ for (s in strata) {
       )
 
       orubricas <- trubricas
-      trubricas$pct <- Vectorize(MUS::.percent)(trubricas$value / sum(trubricas$value))
-      trubricas$value <- Vectorize(MUS::.value)(trubricas$value)
+      trubricas$pct <- Vectorize(MUS:::.percent)(trubricas$value / sum(trubricas$value))
+      trubricas$value <- Vectorize(MUS:::.value)(trubricas$value)
       comb.pop <- rbind(data.frame(g=rgb(0,0.7,0.1,0.4), v=pop$book.value), data.frame(g=rgb(0,0.1,0.7,0.4), v=pop$audit.value))
 
       colnames(trubricas) <- c("Id", paste0(c(gettext("Description", domain=dm), rep("&nbsp;",5)), collapse=""),
@@ -351,10 +351,10 @@ for (s in strata) {
       if (nrow(trubricas)>9) {
         cat("\n\\newpage\n")
       }
-      mus.title("Rubricas", use.pander=TRUE, level=2)
+      MUS:::.title("Rubricas", use.pander=TRUE, level=2)
       pandoc.table(trubricas, justify="clrrr")
       if (inclui_total & s==1) {
-        mus.title("Anexos", use.pander=TRUE, level=2)
+        MUS:::.title("Anexos", use.pander=TRUE, level=2)
         cat("\n- dados.csv")
         cat("\n- script.R")
         cat("\n- diagnostico.txt\n\n")
