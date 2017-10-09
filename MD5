@@ -25,7 +25,6 @@ c7e85c735e646069ec888201aaf083b1 *man/print.MUS.evaluation.result.Rd
 d0f925ae487b32a55e2487062eef2fb7 *man/print.MUS.planning.result.Rd
 1faebf3391ec44409007b4658382bfe9 *NAMESPACE
 753ab9a5542b3c307487717e2cd4a9b8 *po/R-MUS.pot
-2bd53a5f74cd6bd57193ce8ce379097c *po/R-pt_BR.mo
 c8990d48e8f6d5c1cd25acc433c74c45 *po/R-pt_BR.po
 177c1abba09291d8b502a473533589b4 *R/MUS.bounds.R
 4108a5e86888565eb8245a56e9cc006d *R/MUS.combine.R

@@ -1,8 +1,7 @@
-# execute report
+# diretorio inicial
+setwd("/home/ALSOU/MUS")
 
-#setwd("/home/ALSOU/MUS")
 # carrega os data frames
- 
 H = 3  # qtd de estratos
 sdados = data.frame("stratum"=1:H,
 	"conf_level"=rep(conf_level, H),
@@ -23,9 +22,8 @@ source("examples/example.R")
 # selecionados em selected
 print(selected)
 
-# inicializa variaveis
+# avalia
 MUS.step <- 3
-# executa script
 source("examples/example.R")
 
 # gera pdf
@@ -40,4 +38,3 @@ cat("\n\nVersão do R\n\n")
 print(version)
 sink()
 pdftk("examples/example.pdf", "attach_files examples/data.csv examples/example.R examples/diagnostico.txt", "examples/example2.pdf" )
-

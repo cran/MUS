@@ -78,13 +78,6 @@ soma.rubrica <- c(by(dados$book.value, dados$id.rubrica, sum))
 qtd.rubrica <- c(by(dados$book.value, dados$id.rubrica, length))
 rubricas <- data.frame(id=as.numeric(names(soma.rubrica)), nome=uniq.rubrica[as.numeric(names(soma.rubrica))], qty=as.numeric(qtd.rubrica), value=as.numeric(soma.rubrica))
 
-if(!"uso" %in% colnames(dados)) {
-  dados$uso <- ceiling(runif(n=nrow(dados), min=1, max=8))
-}
-if(!"fornec" %in% colnames(dados)) {
-  dados$fornec <- ceiling(runif(n=nrow(dados), min=1, max=100))
-}
-
 if(!"id" %in% colnames(dados)) {
   dados$id <- c(1:nrow(dados))
 }
