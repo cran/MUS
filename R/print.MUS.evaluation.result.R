@@ -2,15 +2,17 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 	print.misstatements=TRUE, print.planning=FALSE, print.extraction=FALSE, print.error.as.pct=TRUE, print.advice=TRUE,
 	style="default", use.pander=FALSE, ...){
 	# Checking parameter
+	dm <- "R-MUS"
+	bindtextdomain(dm)
 	if (class(x)!="MUS.evaluation.result") stop("x has to be an object from type MUS.evaluation.result. Use function MUS.evaluate to create such an object.")
 	x$error.as.pct <- print.error.as.pct
-	mus.title("Evaluation Results", use.pander=use.pander)
+	.title(gettext("Evaluation Results", domain=dm), use.pander=use.pander)
 	res <- list()
 	if (print.extraction) {
 		print.MUS.extraction.result(x, print.planning=print.planning, use.pander=use.pander)
 	}
 	if(sum(x$Results.Total$Number.of.Errors)==0) {
-		cat("\n- No misstatements found. Thus, the projected misstatememt is 0.")
+		cat("\n-", gettext("No misstatements found. Thus, the projected misstatememt is 0.", domain=dm))
 	} else {
 		sample.misstatements <- x$filled.sample[,x$col.name.book.values] - x$filled.sample[,x$col.name.audit.values]
 		res$sample.book.value <- sum(x$filled.sample[,x$col.name.book.values])
@@ -21,8 +23,8 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 
 		res$sample.over.value <- sum(sample.misstatements[sample.misstatements>0])
 		res$sample.under.value <- sum(sample.misstatements[sample.misstatements<0])
-		res$sample.over.rate <- mus.percent(res$sample.over.value / res$sample.book.value)
-		res$sample.under.rate <- mus.percent(res$sample.under.value / res$sample.book.value)
+		res$sample.over.rate <- .percent(res$sample.over.value / res$sample.book.value)
+		res$sample.under.rate <- .percent(res$sample.under.value / res$sample.book.value)
 
 		res$audited.over.uel <- x$Results.Total$Net.upper.error.limit["overstatements"]
 		res$audited.under.uel <- x$Results.Total$Net.upper.error.limit["understatements"]
@@ -31,7 +33,7 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 
 		res$sample.miss.qty <- max(x$Results.Sample$Number.of.Errors)
 		res$sample.miss.value <- sum(sample.misstatements)
-		res$sample.miss.rate <- mus.percent(res$sample.miss.value/res$sample.book.value)
+		res$sample.miss.rate <- .percent(res$sample.miss.value/res$sample.book.value)
 		if (class(x$filled.high.values)=="data.frame") {
 			high.misstatements <- x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values]
 			res$high.book.value <- sum(x$filled.high.values[,x$col.name.book.values])
@@ -55,82 +57,83 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 		res$audited.miss.qty <- res$sample.miss.qty + res$high.miss.qty
 		res$audited.miss.value <- res$sample.miss.value + res$high.miss.value
 		res$audited.book.value <- res$sample.book.value + res$high.book.value
-		res$audited.over.rate <- mus.percent(res$audited.over.value / res$audited.book.value)
-		res$audited.under.rate <- mus.percent(res$audited.under.value / res$audited.book.value)
+		res$audited.over.rate <- .percent(res$audited.over.value / res$audited.book.value)
+		res$audited.under.rate <- .percent(res$audited.under.value / res$audited.book.value)
 
-		res$high.miss.rate <- ifelse(res$high.book.value>0, mus.percent(res$high.miss.value/res$high.book.value), "-")
-		res$audited.miss.rate <- mus.percent(res$audited.miss.value/res$audited.book.value)
+		res$high.miss.rate <- ifelse(res$high.book.value>0, .percent(res$high.miss.value/res$high.book.value), "-")
+		res$audited.miss.rate <- .percent(res$audited.miss.value/res$audited.book.value)
 		res$most.likely.error.value <- x$Results.Total$Net.most.likely.error[1]
-		res$most.likely.error.rate <- mus.percent(res$most.likely.error.value / population.value)
+		res$most.likely.error.rate <- .percent(res$most.likely.error.value / population.value)
 		res$tainting.order <- x$tainting.order
 		res$UEL.lowrate.value <- x$UEL.low.error.rate
-		res$UEL.lowrate.rate <- mus.percent(res$UEL.lowrate.value / population.value)
+		res$UEL.lowrate.rate <- .percent(res$UEL.lowrate.value / population.value)
 		res$UEL.highrate.value <- x$UEL.high.error.rate
-		res$UEL.highrate.rate <- mus.percent(res$UEL.highrate.value / population.value)
+		res$UEL.highrate.rate <- .percent(res$UEL.highrate.value / population.value)
 
 		tbl <- matrix(nrow=9, ncol=4)
-		tbl[1,] = c("Audited Misstatements", res$audited.miss.qty , mus.value(res$audited.miss.value), res$audited.miss.rate)
-		tbl[2,] = c("Audited Overstatements", res$audited.over.qty , mus.value(res$audited.over.value), res$audited.over.rate)
-		tbl[3,] = c("Audited Understatements", res$audited.under.qty , mus.value(res$audited.under.value), res$audited.under.rate)
-		tbl[4,] = c("Sample Misstatements", res$sample.miss.qty , mus.value(res$sample.miss.value), res$sample.miss.rate)
-		tbl[5,] = c("High Value Misstatements", res$high.miss.qty , mus.value(res$high.miss.value), res$high.miss.rate)
-		tbl[7,] = c("UEL (Low Error Rate)", "-" , mus.value(res$UEL.lowrate.value), res$UEL.lowrate.rate)
-		tbl[8,] = c("UEL (High Error Rate)", "-" , mus.value(res$UEL.highrate.value), res$UEL.highrate.rate)
+		tbl[1,] = c(gettext("Audited Misstatements", domain=dm), res$audited.miss.qty , .value(res$audited.miss.value), res$audited.miss.rate)
+		tbl[2,] = c(gettext("Audited Overstatements", domain=dm), res$audited.over.qty , .value(res$audited.over.value), res$audited.over.rate)
+		tbl[3,] = c(gettext("Audited Understatements", domain=dm), res$audited.under.qty , .value(res$audited.under.value), res$audited.under.rate)
+		tbl[4,] = c(gettext("Sample Misstatements", domain=dm), res$sample.miss.qty , .value(res$sample.miss.value), res$sample.miss.rate)
+		tbl[5,] = c(gettext("High Value Misstatements", domain=dm), res$high.miss.qty , .value(res$high.miss.value), res$high.miss.rate)
+		tbl[7,] = c(gettext("UEL (Low Error Rate)", domain=dm), "-" , .value(res$UEL.lowrate.value), res$UEL.lowrate.rate)
+		tbl[8,] = c(gettext("UEL (High Error Rate)", domain=dm), "-" , .value(res$UEL.highrate.value), res$UEL.highrate.rate)
 		if (res$sample.miss.qty > 20) {
-			tbl[6,] = c("Upper Error Limit (Final)", "-" , mus.value(res$UEL.highrate.value), res$UEL.highrate.rate)
+			tbl[6,] = c(gettext("Upper Error Limit (Final)", domain=dm), "-" , .value(res$UEL.highrate.value), res$UEL.highrate.rate)
 		} else {
-			tbl[6,] = c("Upper Error Limit (Final)", "-" , mus.value(res$UEL.lowrate.value), res$UEL.lowrate.rate)
+			tbl[6,] = c(gettext("Upper Error Limit (Final)", domain=dm), "-" , .value(res$UEL.lowrate.value), res$UEL.lowrate.rate)
 		}
-		tbl[9,] = c("Most Likely Error", "-" , mus.value(res$most.likely.error.value), res$most.likely.error.rate)
-#		tbl[2,] <- Vectorize(mus.italic)(tbl[2,])
-#		tbl[3,] <- Vectorize(mus.italic)(tbl[3,])
-#		tbl[7,] <- Vectorize(mus.italic)(tbl[7,])
-#		tbl[8,] <- Vectorize(mus.italic)(tbl[8,])
-		tbl[6,] <- Vectorize(mus.bold)(tbl[6,])
-		tbl[9,] <- Vectorize(mus.bold)(tbl[9,])
-		tbl[1,] <- Vectorize(mus.bold)(tbl[1,])
-		colnames(tbl) <- c(paste0(c("Description", rep("&nbsp;",6)), collapse=""), "Items", "Value", "%")
+		tbl[9,] = c(gettext("Most Likely Error", domain=dm), "-" , .value(res$most.likely.error.value), res$most.likely.error.rate)
+#		tbl[2,] <- Vectorize(.italic)(tbl[2,])
+#		tbl[3,] <- Vectorize(.italic)(tbl[3,])
+#		tbl[7,] <- Vectorize(.italic)(tbl[7,])
+#		tbl[8,] <- Vectorize(.italic)(tbl[8,])
+		tbl[6,] <- Vectorize(.bold)(tbl[6,])
+		tbl[9,] <- Vectorize(.bold)(tbl[9,])
+		tbl[1,] <- Vectorize(.bold)(tbl[1,])
+		colnames(tbl) <- c(paste0(c(gettext("Description", domain=dm), rep("&nbsp;",6)), collapse=""),
+			gettext("Items", domain=dm), gettext("Value", domain=dm), "%")
 		x$tbl <- rbind(x$tbl, tbl)
 		if (style=="report") {
-			pandoc.table(x$tbl, digits=2, justify="lrrr", split.tables=Inf, keep.trailing.zeros=TRUE)
+			pander::pandoc.table(x$tbl, digits=2, justify="lrrr", split.tables=Inf, keep.trailing.zeros=TRUE)
 		} else {
-			cat("\n- Number of Overstatements:\t\t\t", res$sample.over.qty)
-			cat("\n- Number of Understatements:\t\t\t", res$sample.under.qty)
-			cat("\n- Sample Misstatement Amount:\t\t\t", res$sample.miss.value, "(", res$sample.miss.rate , ")")
-			cat("\n- High Values Misstatement Amount:\t\t", res$high.miss.value, "(", res$high.miss.rate, ")")
-			cat("\n- Audited Misstatement Amount:\t\t\t", res$audited.miss.value, "(", res$audited.miss.rate, ")")
-			cat("\n- Most Likely Error:\t\t\t\t", print.UEL(x, res$most.likely.error.value))
+			cat("\n-", .f(gettext("Number of Overstatements", domain=dm)), res$sample.over.qty)
+			cat("\n-", .f(gettext("Number of Understatements", domain=dm)), res$sample.under.qty)
+			cat("\n-", .f(gettext("Sample Misstatement Amount", domain=dm)), res$sample.miss.value, "(", res$sample.miss.rate , ")")
+			cat("\n-", .f(gettext("High Values Misstatement Amount", domain=dm)), res$high.miss.value, "(", res$high.miss.rate, ")")
+			cat("\n-", .f(gettext("Audited Misstatement Amount", domain=dm)), res$audited.miss.value, "(", res$audited.miss.rate, ")")
+			cat("\n-", .f(gettext("Most Likely Error", domain=dm)), .write.UEL(x, res$most.likely.error.value))
 			if (res$tainting.order != "decreasing") {
-				cat("\n- Tainting Order:\t\t\t\t", res$tainting.order)
+				cat("\n-", gettext("Tainting Order", domain=dm), res$tainting.order)
 			}
 			if (error.rate=="low" || error.rate=="both" || res$sample.miss.qty<20) {
-				cat("\n- Upper Error Limit (Low Error Rate):\t\t", print.UEL(x, x$UEL.low.error.rate),
-					is.acceptable(x$acceptable.low.error.rate))
+				cat("\n-", .f(gettext("Upper Error Limit (Low Error Rate)", domain=dm)), .write.UEL(x, x$UEL.low.error.rate),
+					.is.acceptable(x$acceptable.low.error.rate))
 				if (res$sample.over.qty>0 && res$sample.under.qty>0) {
-					cat("\n- Upper Error Limit (Overstatements):\t\t", print.UEL(x, round(res$sample.over.uel)))
-					cat("\n- Upper Error Limit (Understatements):\t\t", print.UEL(x, round(res$sample.under.uel)))
+					cat("\n-", .f(gettext("Upper Error Limit (Overstatements)", domain=dm)), .write.UEL(x, round(res$sample.over.uel)))
+					cat("\n-", .f(gettext("Upper Error Limit (Understatements)", domain=dm)), .write.UEL(x, round(res$sample.under.uel)))
 				}
-				cat("\n- UEL Acceptable (Low Error Rate):\t\t", text.acceptable(x$acceptable.low.error.rate))
+				cat("\n-", .f(gettext("UEL Acceptable (Low Error Rate)", domain=dm)), .msg.acceptable(x$acceptable.low.error.rate))
 			}
 			if (error.rate=="high" || error.rate=="both" || max(x$Results.Sample$Number.of.Errors)>=20) {
-				cat("\n- Upper Error Limit (High Error Rate):\t\t", print.UEL(x, x$high.error.rate$upper.error.limit), is.acceptable(x$acceptable.high.error.rate))
-				cat("\n- UEL Acceptable (High Error Rate):\t\t", text.acceptable(x$acceptable.high.error.rate))
+				cat("\n-", .f(gettext("Upper Error Limit (High Error Rate)", domain=dm)), .write.UEL(x, x$high.error.rate$upper.error.limit), .is.acceptable(x$acceptable.high.error.rate))
+				cat("\n-", .f(gettext("UEL Acceptable (High Error Rate)", domain=dm)), .msg.acceptable(x$acceptable.high.error.rate))
 			}
 			if ("moment.bound" %in% names(x)) {
-				cat("\n- Upper Error Limit (Moment Bound):\t\t", print.UEL(x, x$moment.bound), is.acceptable(x$acceptable.moment.bound))
+				cat("\n-", .f(gettext("Upper Error Limit (Moment Bound)", domain=dm)), .write.UEL(x, x$moment.bound), .is.acceptable(x$acceptable.moment.bound))
 			}
 			if ("binomial.bound" %in% names(x)) {
-				cat("\n- Upper Error Limit (Binomial Bound):\t\t", print.UEL(x, x$binomial.bound), is.acceptable(x$acceptable.binomial.bound))
+				cat("\n-", .f(gettext("Upper Error Limit (Binomial Bound)", domain=dm)), .write.UEL(x, x$binomial.bound), .is.acceptable(x$acceptable.binomial.bound))
 			}
 			if ("multinomial.bound" %in% names(x)) {
-				cat("\n- Upper Error Limit (Multinomial Bound):\t", print.UEL(x, x$multinomial.bound), is.acceptable(x$acceptable.multinomial.bound))
+				cat("\n-", .f(gettext("Upper Error Limit (Multinomial Bound)", domain=dm)), .write.UEL(x, x$multinomial.bound), .is.acceptable(x$acceptable.multinomial.bound))
 			}
 
 		}
 
 	}
 	if (print.misstatements && sum(x$Results.Total$Number.of.Errors) > 0) {
-		cat("\n\nFactual Misstatements:\n")
+		cat(paste0("\n\n", gettext("Factual Misstatements", domain=dm), "\n"))
 		if (is.data.frame(x$filled.sample) | is.matrix(x$filled.sample)) {
 			factual <- subset(x$filled.sample, with(x, filled.sample[,col.name.audit.values]!=filled.sample[,col.name.book.values]))
 			if(nrow(factual)>0) {
@@ -148,40 +151,41 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 
 	if (print.advice) {
 		advised <- FALSE
+		dm <- "R-MUS"
 		if(!x$acceptable) {
-			advised <- print.advice.title(advised, use.pander=use.pander)
+			advised <- .write.advice.title(advised, use.pander=use.pander)
 			if (x$combined) {
 				if (x$qty.accepted > 0) {
-					cat("\n* Some strata are acceptable.")
+					cat("\n*", gettext("Some strata are acceptable.", domain=dm))
 				} else {
-					cat("\n* No strata are acceptable.")
+					cat("\n*", gettext("No strata are acceptable.", domain=dm))
 				}
-				cat("\n* You have to get further audit evidence or extend the sample.")
-				cat("\n* You have to book the MLE if it is material.")
+				cat("\n*", gettext("You have to get further audit evidence or extend the sample.", domain=dm))
+				cat("\n*", gettext("You have to book the MLE if it is material.", domain=dm))
 			} else {
-				cat("\n* Stratum results are not acceptable.")
-				cat("\n* You have to get further audit evidence or extend the sample.")
-				cat("\n* You have to book the MLE if it is material.")
+				cat("\n*", gettext("Stratum results are not acceptable.", domain=dm))
+				cat("\n*", gettext("You have to get further audit evidence or extend the sample.", domain=dm))
+				cat("\n*", gettext("You have to book the MLE if it is material.", domain=dm))
 			}
 		} else {
 			if (x$combined) {
-				cat("\n* All strata results are acceptable.")
+				cat("\n*", gettext("All strata results are acceptable.", domain=dm))
 			} else {
-				cat("\n* Stratum results are acceptable.")
+				cat("\n*", gettext("Stratum results are acceptable.", domain=dm))
 			}
-			cat("\n* Audit evidence is sufficient.")
+			cat("\n*", gettext("Audit evidence is sufficient.", domain=dm))
 		}
 		if ((error.rate=="high" || error.rate=="both") && max(x$Results.Sample$Number.of.Errors) < 20) {
-			advised <- print.advice.title(advised, use.pander=use.pander)
-			message("\n* You had less than 20 errors in the sample. Low Error Rate evaluation recommended.")
+			advised <- .write.advice.title(advised, use.pander=use.pander)
+			cat("\n*", gettext("You had less than 20 errors in the sample. Low Error Rate evaluation recommended.", domain=dm))
 		}
 		if ((error.rate=="low" || error.rate=="both") && max(x$Results.Sample$Number.of.Errors)>=20) {
-			advised <- print.advice.title(advised, use.pander=use.pander)
-			cat("\n* You had at least 20 errors in the sample. High Error Rate evaluation recommended.")
+			advised <- .write.advice.title(advised, use.pander=use.pander)
+			cat("\n*", gettext("You had at least 20 errors in the sample. High Error Rate evaluation recommended.", domain=dm))
 		}
 		if (x$Results.Total$Number.of.Errors["understatements"]>0) {
-			advised <- print.advice.title(advised, use.pander=use.pander)
-			cat("\n* Please be aware that MUS is not designed to detect understatements, thus they can only be used as an indicator.")
+			advised <- .write.advice.title(advised, use.pander=use.pander)
+			cat("\n*", gettext("Please be aware that MUS is not designed to detect understatements, thus they can only be used as an indicator.", domain=dm))
 		}
 	}
 	cat("\n")
@@ -191,48 +195,54 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 	if (any(with(x$data, get(x$col.name.book.values))<0)) warning("There are negative values as book values in your data. Those elements have no chance for selection. You have to audit them separately.")
 }
 
-print.advice.title <- function(already.printed=FALSE, use.pander=use.pander) {
+.write.advice.title <- function(already.printed=FALSE, use.pander=use.pander) {
+	dm <- "R-MUS"
 	if (!already.printed) {
 		cat("\n")
-		mus.title("Recommendations", use.pander=use.pander)
+		.title(gettext("Recommendations", domain=dm), use.pander=use.pander)
 		already.printed <- TRUE
 	}
 	already.printed
 }
 
-is.acceptable <- function(x) {
+.is.acceptable <- function(x) {
 	ifelse(x, "*", "")
 }
-text.acceptable <- function(x) {
-	ifelse(x, "Yes", "No")
+.msg.acceptable <- function(x) {
+	ifelse(x, gettext("Yes"), gettext("No"))
 }
 
-print.UEL <- function(x, y, digits=2, format="f", ...) {
-	population.value <- x$book.value - sum(x$filled.high.values[,x$col.name.book.values])
+.write.UEL <- function(x, y, digits=2, format="f", ...) {
+	population.value <- x$book.value -
+		ifelse(is.data.frame(x$filled.high.values), sum(x$filled.high.values[,x$col.name.book.values]), 0)
 	ifelse(x$error.as.pct, paste0(formatC(100 * y / population.value, format=format, digits=digits, ...), "%"), y)
 }
 
-mus.percent <- function(x, digits = 2, format = "f", ...) {
+.percent <- function(x, digits = 2, format = "f", ...) {
   # paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
   ifelse(is.numeric(x), formatC(100 * x, format = format, digits = digits, ...), "-")
 }
-mus.value <- function(x, digits=2, big.mark=NULL, decimal.mark=getOption("OutDec"), ...) {
+.value <- function(x, digits=2, big.mark=NULL, decimal.mark=getOption("OutDec"), ...) {
   # paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
   big.mark = ifelse(is.null(big.mark), ifelse(decimal.mark==".", ",", "."), big.mark)
   ifelse(is.numeric(x), format(round(x, digits), nsmall=digits, big.mark=big.mark, decimal.mark=decimal.mark, ...), "-")
 }
-mus.title <- function(x, use.pander=FALSE, level=2) {
-	if (use.pander && require("pander")) {
-		pandoc.header(x, level=level)
+.title <- function(x, use.pander=FALSE, level=2) {
+    if (use.pander && requireNamespace("pander", quietly = TRUE)) {
+		pander::pandoc.header(x, level=level)
 	} else {
 		cat(paste0("\n", x, "\n"))
 	}
 }
 
-mus.italic <- function(x) {
+.italic <- function(x) {
 	paste0("_",x,"_")
 }
 
-mus.bold <- function(x) {
+.bold <- function(x) {
 	paste0("__",x,"__")
+}
+
+.f <- function(x) {
+	sprintf("%-40s", x)
 }

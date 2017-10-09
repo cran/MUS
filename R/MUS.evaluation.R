@@ -202,16 +202,13 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	UEL.high.error.rate <- most.likely.error + precision * sign(most.likely.error) + high.values.error
 	acceptable.high.error.rate <- (UEL.high.error.rate <= extract$tolerable.error)
 
-	debug <- list(mean=ratios_mean, sd=ratios_sd, precision=precision, Y=Y, U=U, R=R,
-		N=N, n=nrow(filled.sample), high.values.error=high.values.error)
-
 	high.error.rate = list(	most.likely.error = most.likely.error + high.values.error, upper.error.limit = UEL.high.error.rate,
-		acceptable = acceptable.high.error.rate, debug = debug)
+		acceptable = acceptable.high.error.rate )
 
 	# gives warning if high error rate evaluation might be appropriate
 	if (max(Results.Sample$Number.of.Errors)>=20) {
 		if (print.advice) {
-			message("\n** You had at least 20 errors in the sample. High Error Rate evaluation recommended.")
+			message("\n** ", "You had at least 20 errors in the sample. High Error Rate evaluation recommended.")
 		}
 		acceptable <- acceptable.high.error.rate
 	}
@@ -220,41 +217,15 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	result <- c(extract, list(filled.sample=filled.sample, filled.high.values=filled.high.values, col.name.audit.values=col.name.audit.values, Overstatements.Result.Details=over, Understatements.Result.Details=under, Results.Sample=Results.Sample, Results.High.values=Results.High.values, Results.Total=Results.Total, acceptable=acceptable, tainting.order=tainting.order,
 	UEL.low.error.rate=UEL.low.error.rate, UEL.high.error.rate=UEL.high.error.rate,
 	acceptable.low.error.rate=acceptable.low.error.rate, acceptable.high.error.rate=acceptable.high.error.rate,
-	high.error.rate=high.error.rate, debug=debug, combined=combined))
+	high.error.rate=high.error.rate, combined=combined))
 	class(result) <- "MUS.evaluation.result"
 	if (experimental) {
-		result$moment.bound <- moment.bound(result)
+		result$moment.bound <- MUS.moment.bound(result)
 		result$acceptable.moment.bound <- (result$moment.bound <= extract$tolerable.error)
-		if (require("DescTools")) {
-			result$binomial.bound <- binomial.bound(result)
-			result$acceptable.binomial.bound <- (result$binomial.bound <= extract$tolerable.error)
-			result$multinomial.bound <- multinomial.bound(result)
-			result$acceptable.multinomial.bound <- (result$multinomial.bound <= extract$tolerable.error)
-		}
+		result$binomial.bound <- MUS.binomial.bound(result)
+		result$acceptable.binomial.bound <- (result$binomial.bound <= extract$tolerable.error)
+		result$multinomial.bound <- MUS.multinomial.bound(result)
+		result$acceptable.multinomial.bound <- (result$multinomial.bound <= extract$tolerable.error)
 	}
 	return(result)
-}
-
-combined.UEL.high.error.rate <- function(evaluation, interval.type="one-sided"){
-	filled.sample <- evaluation$filled.sample
-	filled.high.values <- evaluation$filled.high.values
-	col.name.audit.values <- evaluation$col.name.audit.values
-	col.name.book.values <- evaluation$col.name.book.values
-	confidence.level <- evaluation$confidence.level
-
-	ratios <- 1 - filled.sample[,col.name.audit.values]/filled.sample[,col.name.book.values]
-	qty_errors <- sum(ratios!=0)
-	ratios_mean <- mean(ratios)
-	ratios_sd <- sd(ratios)
-
-	N <- nrow(evaluation$data) - nrow(filled.high.values)
-	Y <- sum(evaluation$data[, col.name.book.values]) - sum(filled.high.values[, col.name.book.values])
-	R <- ifelse(interval.type == "two-sided",  1 - (1 - confidence.level) / 2, confidence.level)
-	U <- qt(R, qty_errors - 1)
-
-    high.values.error <- sum(filled.high.values[, col.name.book.values]-filled.high.values[, col.name.audit.values])
-	most.likely.error <- ratios_mean * Y
-	precision <- U * Y * ratios_sd / sqrt(nrow(filled.sample))
-	upper.error.limit <- most.likely.error + precision * sign(most.likely.error) + high.values.error
-	upper.error.limit
 }

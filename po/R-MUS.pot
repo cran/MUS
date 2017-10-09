@@ -1,15 +1,23 @@
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: MUS 0.1.5\n"
 "Report-Msgid-Bugs-To: https://github.com/alsguimaraes/MUS\n"
-"POT-Creation-Date: 2017-09-18 11:40\n"
-"PO-Revision-Date: 2017-09-18 11:40\n"
-"Last-Translator:  \n"
-"Language-Team:  \n"
-"Language: LL\n"
+"POT-Creation-Date: 2017-10-06 14:15-0300\n"
+"PO-Revision-Date: 2017-10-06 10:22\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ll\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.4\n"
+
+msgid "x has to be a vector or an object of type MUS.evaluation.result. Use function MUS.evaluate to create such an object."
+msgstr ""
+
+msgid "lx must be a list with one or more MUS.evaluation.result objects."
+msgstr ""
 
 msgid "extract has to be an object from type MUS.extraction.result. Use function MUS.extraction to create such an object."
 msgstr ""
@@ -35,6 +43,9 @@ msgstr ""
 msgid "filled.sample must not have a column 'd' because this column name is used for internal evaluation."
 msgstr ""
 
+msgid "filled.sample must not have a column 'tord' because this column name is used for internal evaluation."
+msgstr ""
+
 msgid "filled.high.values needs to be a data frame or a matrix but it is not."
 msgstr ""
 
@@ -47,7 +58,7 @@ msgstr ""
 msgid "If col.name.riskweights is not NULL, the filled.high.values requires a column with the col.name.riskweights and the name of this column has to be provided by parameter col.name.riskweights (default NULL)."
 msgstr ""
 
-msgid "You had at least 20 errors in the sample - some statistical software recommends High Error Rate evaluation instead of Low Error Rate evaluation in this case. However, High Error Rate evaluation is not yet implemented. The evaluation might not be appropriate."
+msgid "You had at least 20 errors in the sample. High Error Rate evaluation recommended."
 msgstr ""
 
 msgid "plan has to be an object from type MUS.planning.result. Use function MUS.planning to create such an object."
@@ -92,6 +103,9 @@ msgstr ""
 msgid "Minimum number of sample size has to be a numeric value between 0 and the number of items in the population (last exclusive). If the minimum sample size is equal or larger than the number of items in the population, sampling is not suitable because every item has to be tested anyway."
 msgstr ""
 
+msgid "Combination of parameters leads to impractically large sample."
+msgstr ""
+
 msgid "Tolerable Error has to be a numeric value between 0 and book value (both exclusive). If the tolerable error is equal larger than book value, no sampling is necessary. However, Planning will be proceeded."
 msgstr ""
 
@@ -116,3 +130,209 @@ msgstr ""
 msgid "x has to be an object from type MUS.evaluation.result. Use function MUS.evaluate to create such an object."
 msgstr ""
 
+msgid "Evaluation Results"
+msgstr ""
+
+msgid "No misstatements found. Thus, the projected misstatememt is 0."
+msgstr ""
+
+msgid "Audited Misstatements"
+msgstr ""
+
+msgid "Audited Overstatements"
+msgstr ""
+
+msgid "Audited Understatements"
+msgstr ""
+
+msgid "Sample Misstatements"
+msgstr ""
+
+msgid "High Value Misstatements"
+msgstr ""
+
+msgid "UEL (Low Error Rate)"
+msgstr ""
+
+msgid "UEL (High Error Rate)"
+msgstr ""
+
+msgid "Upper Error Limit (Final)"
+msgstr ""
+
+msgid "Most Likely Error"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "Items"
+msgstr ""
+
+msgid "Value"
+msgstr ""
+
+msgid "Number of Overstatements"
+msgstr ""
+
+msgid "Number of Understatements"
+msgstr ""
+
+msgid "Sample Misstatement Amount"
+msgstr ""
+
+msgid "High Values Misstatement Amount"
+msgstr ""
+
+msgid "Audited Misstatement Amount"
+msgstr ""
+
+msgid "Tainting Order"
+msgstr ""
+
+msgid "Upper Error Limit (Low Error Rate)"
+msgstr ""
+
+msgid "Upper Error Limit (Overstatements)"
+msgstr ""
+
+msgid "Upper Error Limit (Understatements)"
+msgstr ""
+
+msgid "UEL Acceptable (Low Error Rate)"
+msgstr ""
+
+msgid "Upper Error Limit (High Error Rate)"
+msgstr ""
+
+msgid "UEL Acceptable (High Error Rate)"
+msgstr ""
+
+msgid "Upper Error Limit (Moment Bound)"
+msgstr ""
+
+msgid "Upper Error Limit (Binomial Bound)"
+msgstr ""
+
+msgid "Upper Error Limit (Multinomial Bound)"
+msgstr ""
+
+msgid "Factual Misstatements"
+msgstr ""
+
+msgid "Some strata are acceptable."
+msgstr ""
+
+msgid "No strata are acceptable."
+msgstr ""
+
+msgid "You have to get further audit evidence or extend the sample."
+msgstr ""
+
+msgid "You have to book the MLE if it is material."
+msgstr ""
+
+msgid "Stratum results are not acceptable."
+msgstr ""
+
+msgid "All strata results are acceptable."
+msgstr ""
+
+msgid "Stratum results are acceptable."
+msgstr ""
+
+msgid "Audit evidence is sufficient."
+msgstr ""
+
+msgid "You had less than 20 errors in the sample. Low Error Rate evaluation recommended."
+msgstr ""
+
+msgid "Please be aware that MUS is not designed to detect understatements, thus they can only be used as an indicator."
+msgstr ""
+
+msgid "Recommendations"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "x has to be an object from type MUS.extraction.result or MUS.evaluation.result or MUS.planning.result."
+msgstr ""
+
+msgid "Extraction Parameters"
+msgstr ""
+
+msgid "Sample"
+msgstr ""
+
+msgid "High Values"
+msgstr ""
+
+msgid "Audited"
+msgstr ""
+
+msgid "Population"
+msgstr ""
+
+msgid "Sample items"
+msgstr ""
+
+msgid "Sample amount"
+msgstr ""
+
+msgid "Sample coverage"
+msgstr ""
+
+msgid "High Value items"
+msgstr ""
+
+msgid "High Value amount"
+msgstr ""
+
+msgid "High Value coverage"
+msgstr ""
+
+msgid "Audited items"
+msgstr ""
+
+msgid "Audited amount"
+msgstr ""
+
+msgid "Audited coverage"
+msgstr ""
+
+msgid "Planning Parameters"
+msgstr ""
+
+msgid "Expected Error"
+msgstr ""
+
+msgid "Tolerable Error (Materiality)"
+msgstr ""
+
+msgid "Confidence Level"
+msgstr ""
+
+msgid "High Value Threshold"
+msgstr ""
+
+msgid "Population size"
+msgstr ""
+
+msgid "Population amount"
+msgstr ""
+
+msgid "Expected Error in population"
+msgstr ""
+
+msgid "Expected Error Rate"
+msgstr ""
+
+msgid "Tolerable Error Rate"
+msgstr ""
+
+msgid "Sample size"
+msgstr ""

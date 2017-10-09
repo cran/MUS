@@ -9,9 +9,11 @@ Author: Henning Prömpers
 Maintainer: Henning Prömpers <henning@proempers.net>
 Description: Sampling and evaluation methods to apply Monetary Unit Sampling (or in older literature Dollar Unit Sampling) during an audit of financial statements.
 Depends: R (>= 3.3.2), stats
+Suggests: DescTools, pander
 License: GPL (>= 2)
 NeedsCompilation: no
 BugReports: https://github.com/alsguimaraes/MUS
 Packaged: 2017-09-15 11:35:09 UTC; henning
 Repository: CRAN
 Date/Publication: 2017-09-15 12:59:00 UTC
+RoxygenNote: 6.0.1

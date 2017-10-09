@@ -1,17 +1,15 @@
-moment.bound <- function(x, confidence.level=0.95, as.percentage=FALSE, include.high.values=TRUE) {
+MUS.moment.bound <- function(x, confidence.level=0.95, as.pct=FALSE, include.high.values=TRUE) {
     # Dworking & Grimlund, 1984
     # data = c(rep(0, 96), -.16, .04, .18, .47)
     if (!class(x)=="MUS.evaluation.result" && !is.vector(x)) stop("x has to be a vector or an object of type MUS.evaluation.result. Use function MUS.evaluate to create such an object.")
 
     if (class(x)=="MUS.evaluation.result") {
-        if (include.high.values) {
-            data <- c(1 - x$filled.high.values[,x$col.name.audit.values] / x$filled.high.values[,x$col.name.book.values])
-            data <- c(data, (1 - x$filled.sample[,x$col.name.audit.values] / x$filled.sample[,x$col.name.book.values]))
-        } else {
-            data <- c(1 - x$filled.sample[,x$col.name.audit.values] / x$filled.sample[,x$col.name.book.values])
+        data <- c(1 - x$filled.sample[,x$col.name.audit.values] / x$filled.sample[,x$col.name.book.values])
+        if (include.high.values && is.data.frame(x$filled.high.values)) {
+            data <- c(data, (1 - x$filled.high.values[,x$col.name.audit.values] / x$filled.high.values[,x$col.name.book.values]))
         }
         confidence.level <- x$confidence.level
-        mult <- ifelse(as.percentage, 100, x$Results.Total$Net.most.likely.error[1])
+        mult <- ifelse(as.pct, 100, x$Results.Total$Net.most.likely.error[1])
     } else {
         data <- x
         mult <- 0
@@ -35,11 +33,11 @@ moment.bound <- function(x, confidence.level=0.95, as.percentage=FALSE, include.
     ifelse(mult == 0, CB*100, (1 + CB) * (mult))
 }
 
-binomial.bound <- function(x, target="qty", as.percentage=FALSE, include.high.values=TRUE, confidence.level=0.95) {
+MUS.binomial.bound <- function(x, scope="qty", as.pct=FALSE, include.high.values=TRUE, confidence.level=0.95) {
     if (!class(x)=="MUS.evaluation.result" && !is.vector(x)) stop("x has to be a vector or an object of type MUS.evaluation.result. Use function MUS.evaluate to create such an object.")
     if (class(x)=="MUS.evaluation.result") {
-        if (target == "value") {
-            if (include.high.values) {
+        if (scope == "value") {
+            if (include.high.values && is.data.frame(x$filled.high.values) ) {
                 misstatement <- sum(x$filled.sample[,x$col.name.book.values] - x$filled.sample[,x$col.name.audit.values]) +
                     sum(x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values])
                 audited.value <- sum(x$filled.sample[,x$col.name.book.values]) + sum(x$filled.high.values[,x$col.name.book.values])
@@ -51,7 +49,7 @@ binomial.bound <- function(x, target="qty", as.percentage=FALSE, include.high.va
             }
             misstatement <- ceiling(misstatement / audited.value * book.value )
         } else {
-            if (include.high.values) {
+            if (include.high.values && is.data.frame(x$filled.high.values) ) {
                 misstatement <- sum(x$filled.sample[,x$col.name.book.values] != x$filled.sample[,x$col.name.audit.values]) +
                     sum(x$filled.high.values[,x$col.name.book.values] != x$filled.high.values[,x$col.name.audit.values])
                 book.value <- length(x$filled.sample[,x$col.name.book.values]) + length(x$filled.high.values[,x$col.name.book.values])
@@ -62,23 +60,27 @@ binomial.bound <- function(x, target="qty", as.percentage=FALSE, include.high.va
         }
         materiality <- x$tolerable.error / x$book.value
         confidence.level = x$confidence.level
-        mult <- ifelse(as.percentage, 100, x$book.value)
+        mult <- ifelse(as.pct, 100, x$book.value)
     } else {
         # x are taintings
         mult <- 100
         book.value <- length(x)
         misstatement <- sum(x)
     }
-#    bt <- binom.test(misstatement, book.value, materiality, alternative="less", conf.level=x$confidence.level)
-    bc <- BinomCI(misstatement, book.value, conf.level=1-(1-confidence.level) * 2, method = "clopper-pearson")
-    #bt$conf.int[2]
-    ifelse(as.percentage, (bc[3] * mult), round(bc[3] * mult))
+
+    if (requireNamespace("DescTools", quietly = TRUE)) {
+        bc <- DescTools::BinomCI(misstatement, book.value, conf.level=1-(1-confidence.level) * 2, method = "clopper-pearson")
+        ifelse(as.pct, (bc[3] * mult), round(bc[3] * mult))
+    } else {
+        NULL
+    }
 }
 
-multinomial.bound <- function(x, as.percentage=FALSE, include.high.values=TRUE) {
+MUS.multinomial.bound <- function(x, as.pct=FALSE, include.high.values=TRUE) {
+	if (class(x)!="MUS.evaluation.result") stop("x has to be an object from type MUS.evaluation.result. Use function MUS.evaluate to create such an object.")
     res <- NA
-    if (require("DescTools")) {
-        if (include.high.values) {
+    if (requireNamespace("DescTools", quietly = TRUE)) {
+        if (include.high.values && is.data.frame(x$filled.high.values) ) {
             misstatement <- ceiling(c(1 - x$filled.sample[,x$col.name.audit.values] / x$filled.sample[,x$col.name.book.values],
                 1 - x$filled.high.values[,x$col.name.audit.values] / x$filled.high.values[,x$col.name.book.values]))
         } else {
@@ -86,8 +88,39 @@ multinomial.bound <- function(x, as.percentage=FALSE, include.high.values=TRUE) 
         }
 
         observed <- aggregate(data.frame(count = misstatement), list(value = misstatement), length)
-        res <- MultinomCI(observed$count, conf.level=1-(1-x$confidence.level) * 2, method="sisonglaz")
+        res <- DescTools::MultinomCI(observed$count, conf.level=1-(1-x$confidence.level) * 2, method="sisonglaz")
+        mult <- ifelse(as.pct, 100, x$book.value)
+        ifelse(as.pct, ((1-res[observed$value==0][2])) * mult, round(((1-res[observed$value==0][2])) * mult))
+    } else {
+        NULL
     }
-    mult <- ifelse(as.percentage, 100, x$book.value)
-    ifelse(as.percentage, ((1-res[observed$value==0][2])) * mult, round(((1-res[observed$value==0][2])) * mult))
+}
+
+MUS.combined.high.error.rate <- function(evaluation, interval.type="one-sided"){
+	filled.sample <- evaluation$filled.sample
+	filled.high.values <- evaluation$filled.high.values
+	col.name.audit.values <- evaluation$col.name.audit.values
+	col.name.book.values <- evaluation$col.name.book.values
+	confidence.level <- evaluation$confidence.level
+
+	ratios <- 1 - filled.sample[,col.name.audit.values]/filled.sample[,col.name.book.values]
+	qty_errors <- sum(ratios!=0)
+	ratios_mean <- mean(ratios)
+	ratios_sd <- sd(ratios)
+    if (is.data.frame(filled.high.values)) {
+        N <- nrow(evaluation$data) - nrow(filled.high.values)
+        Y <- sum(evaluation$data[, col.name.book.values]) - sum(filled.high.values[, col.name.book.values])
+        high.values.error <- sum(filled.high.values[, col.name.book.values]-filled.high.values[, col.name.audit.values])
+    } else {
+        N <- nrow(evaluation$data)
+        Y <- sum(evaluation$data[, col.name.book.values])
+        high.values.error <- 0
+    }
+	R <- ifelse(interval.type == "two-sided",  1 - (1 - confidence.level) / 2, confidence.level)
+	U <- qt(R, qty_errors - 1)
+
+	most.likely.error <- ratios_mean * Y
+	precision <- U * Y * ratios_sd / sqrt(nrow(filled.sample))
+	upper.error.limit <- most.likely.error + precision * sign(most.likely.error) + high.values.error
+	upper.error.limit
 }

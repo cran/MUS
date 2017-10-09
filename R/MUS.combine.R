@@ -1,16 +1,16 @@
-combine.evaluations <- function(lx) {
-    if (!is.list(lx) || length(lx)<1) {
-        stop("lx must be a list with one or more MUS.evaluation.result objects.")
+MUS.combine <- function(object.list) {
+    if (!is.list(object.list) || length(object.list)<1) {
+        stop("object.list must be a list with one or more MUS.evaluation.result objects.")
     }
     s <- 1
-    x <- lx[[s]]
-    if (length(lx)>1) {
+    x <- object.list[[s]]
+    if (length(object.list)>1) {
         x$High.value.threshold <- "-"
-        x$Strata <- length(lx)
+        x$Strata <- length(object.list)
         x$qty.rejected <- ifelse(x$acceptable, 0, 1)
         x$qty.accepted <- ifelse(x$acceptable, 1, 0)
-        for (s in 2:length(lx)) {
-            y <- lx[[s]]
+        for (s in 2:length(object.list)) {
+            y <- object.list[[s]]
             x$data <- rbind(x$data, y$data)
             x$sample <- rbind(x$sample, y$sample)
             if ("filled.sample" %in% names(x)) {

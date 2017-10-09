@@ -11,7 +11,7 @@
 }
 \usage{
 MUS.planning(data, col.name.book.values, confidence.level,
-tolerable.error, expected.error, n.min, errors.as.pct, conservative)
+tolerable.error, expected.error, n.min, errors.as.pct, conservative, combined)
 }
 \arguments{
   \item{data}{A data frame or matrix which contains at least one column
@@ -25,8 +25,9 @@ tolerable.error, expected.error, n.min, errors.as.pct, conservative)
   \item{expected.error}{The expected error which is contained in the
     population in Monetary Units.}
   \item{n.min}{Minimum sample size that should be used. Default is 0.}
-  \item{errors.as.pct}{Tolerable and Expected error informed as percentages. Default is False.}
-  \item{conservative}{Use conservative algorithm for sample size calculation (i.e., gamma-based, AICPA compatible).}
+  \item{errors.as.pct}{Boolean. Tolerable and Expected error informed as percentages. Default is False.}
+  \item{conservative}{Boolean. Use conservative algorithm for sample size calculation (i.e., gamma-based, AICPA compatible).}
+  \item{combined}{Boolean. Marks the dataset as a combination of multiple strata. Default is "FALSE".}
 }
 \value{
   An object MUS.planning.result is returned which is a list containing

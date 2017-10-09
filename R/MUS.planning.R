@@ -20,7 +20,7 @@
 	# However, if account value is larger, this is the maximal possible sampling size.
 }
 
-MUSFactor <- function(risk, e) {
+.MUSFactor <- function(risk, e) {
 # calculate MUS Factor
 # Based on Technical Notes on the AICPA Audit Guide Audit Sampling, Trevor Stewart, AICPA, 2012
   erro = -1
@@ -47,10 +47,10 @@ MUSFactor <- function(risk, e) {
   resp
 }
 
-calc.n.conservative <- function(conf_level, tolerable.error, expected.error, book.value) {
+.calc.n.conservative <- function(conf_level, tolerable.error, expected.error, book.value) {
 # calculate n consevatively, as per AICPA audit guide
   pct_ratio = expected.error / tolerable.error
-  conf_factor = ceiling(MUSFactor(conf_level, pct_ratio)*100)/100
+  conf_factor = ceiling(.MUSFactor(conf_level, pct_ratio)*100)/100
   ceiling(conf_factor / tolerable.error / book.value)
 }
 
@@ -115,7 +115,7 @@ MUS.planning <- function(data, col.name.book.values="book.value", confidence.lev
 	n.final <- max(n.optimal, n.min) # take greater value of optimal n or predefined minimum sample size
 
 	if (conservative) {
-		n.final = max(n.final, calc.n.conservative(confidence.level, tolerable.error, expected.error, book.value))
+		n.final = max(n.final, .calc.n.conservative(confidence.level, tolerable.error, expected.error, book.value))
 	}
 
 	interval <- book.value/n.final # calculate sampling interval

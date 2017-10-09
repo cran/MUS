@@ -7,7 +7,7 @@
   extraction step, you get to know the items that you have to audit.
 }
 \usage{
-MUS.extraction(plan, start.point, seed, obey.n.as.min)
+MUS.extraction(plan, start.point, seed, obey.n.as.min, combined)
 }
 \arguments{
   \item{plan}{A MUS.planning.result object that you got by executing the
@@ -21,11 +21,12 @@ MUS.extraction(plan, start.point, seed, obey.n.as.min)
     number generator is initialised. This argument is mainly used for
     simulations or if you want to be able to regenerate the sample on
     another computer.}
-  \item{obey.n.as.min}{If set to TRUE, the sample interval will be
+  \item{obey.n.as.min}{Boolean. If set to TRUE, the sample interval will be
     exactly recalculated and thus the sample size will be exactly the
     planned sample size. Default is FALSE which is what most commercial
     statistical software do. In this case the drawn sample size might be
     slightly smaller than specified.}
+  \item{combined}{Boolean. Marks the dataset as a combination of multiple strata. Default is "FALSE".}
 }
 \value{
   An object MUS.extraction.result is returned which is a list containing
@@ -46,7 +47,7 @@ MUS.extraction(plan, start.point, seed, obey.n.as.min)
 }
 \author{Henning Prömpers <henning@proempers.net>}
 \seealso{
-  \code{\link{MUS.planning}} for planning a sample and 
+  \code{\link{MUS.planning}} for planning a sample and
   \code{\link{MUS.evaluation}} for evaluation of the extracted and
   audited sample.
 }
