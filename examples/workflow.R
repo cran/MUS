@@ -1,6 +1,16 @@
 # diretorio inicial
-setwd("/home/ALSOU/MUS")
+#setwd("/home/ALSOU/MUS")
+#setwd("/projetos/MUS")
 
+rm(list=ls())
+origem <- "/home/ALSOU/MUS/examples"
+origemWindows <- "/projetos/MUS/examples"
+if ((!file.exists(origem)) & file.exists(origemWindows)) {
+  origem <- origemWindows
+}
+origem <- paste0(origem, "/")
+
+file.copy(c(paste0(origem, "example.R")), getwd())
 # carrega os data frames
 H = 3  # qtd de estratos
 sdados = data.frame("stratum"=1:H,
@@ -12,29 +22,33 @@ sdados = data.frame("stratum"=1:H,
 inclui_total <- FALSE
 MUS.step <- 1
 print(sdados)
-source("examples/example.R")
+source("example.R")
 # n para cada estrato em sdados$sizes
 print(sdados)
 
 # seleciona amostra
 MUS.step <- 2
-source("examples/example.R")
+source("example.R")
 # selecionados em selected
 print(selected)
 
 # avalia
 MUS.step <- 3
-source("examples/example.R")
+source("example.R")
 
 # gera pdf
 MUS.step <- 4
-render("examples/example.Rmd", pdf_document())
+file.copy(c(paste0(origem, "example.Rmd"), paste0(origem, "logo.png")), getwd())
+rmarkdown::render(input="example.Rmd", 
+	output_format="pdf_document", 
+	output_file='work.pdf', 
+	output_options=list()
+)
+unlink(c("example.Rmd", "logo.png"))
 
 # inclui attachments no pdf
-sink("examples/diagnostico.txt")
-cat("Informações da Sessão\n\n")
-print(sessionInfo())
-cat("\n\nVersão do R\n\n")
-print(version)
-sink()
-pdftk("examples/example.pdf", "attach_files examples/data.csv examples/example.R examples/diagnostico.txt", "examples/example2.pdf" )
+MUS.step <- 5
+source("example.R")
+
+# cleanup
+unlink(c("report.pdf", "example.R"))

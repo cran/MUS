@@ -5,14 +5,6 @@ library(ggplot2)
 library(rmarkdown)
 library(animation)
 
-ani.options(pdftk = '/bin/pdftk')
-if (!file.exists('/bin/pdftk')) {
-	ani.options(pdftk = '/tools/pdftk/pdftk.exe')
-}
-panderOptions('keep.trailing.zeros', T)
-panderOptions('round', 2)
-panderOptions('digits', 19)
-
 calc.n <- function(conf_level, pct_tolerable, pct_expected) {
   pct_ratio <- pct_expected / pct_tolerable
   conf_factor <- ceiling(MUS.factor(conf_level, pct_ratio)*100)/100
@@ -39,14 +31,69 @@ calc.all <- function(dados, conf_level=0.95, pct_tolerable=0.1, pct_expected=0.0
   dados
 }
 
+format_si <- function(...) {
+  function(x) {
+    limits <- c(1e0,   1e3, 1e6,   1e9,   1e12)
+    prefix <- c(" ",   "k", "M",   "B",   "T")
+
+    # Vector with array indices according to position in intervals
+    i <- findInterval(abs(x), limits)
+
+    # Set prefix to " " for very small values < 1e-24
+    i <- ifelse(i==0, which(limits == 1e0), i)
+
+    paste(format(round(x/limits[i], 1),
+                 trim=TRUE, scientific=FALSE, ...),
+          prefix[i])
+  }
+}
+
+format_pct <- function(...) {
+  function(x) {
+      x*100
+  }
+}
+
+format_exp <- function(...) {
+  function(x) {
+    x <- exp(x)
+    limits <- c(1e0,   1e3, 1e6,   1e9,   1e12)
+    prefix <- c(" ",   "k", "M",   "B",   "T")
+
+    # Vector with array indices according to position in intervals
+    i <- findInterval(abs(x), limits)
+
+    # Set prefix to " " for very small values < 1e-24
+    i <- ifelse(i==0, which(limits == 1e0), i)
+
+    paste(format(round(x/limits[i], 1),
+                 trim=TRUE, scientific=FALSE, ...),
+          prefix[i])
+  }
+}
+
+# setup options and variables
+ani.options(pdftk = '/bin/pdftk')
+if (!file.exists('/bin/pdftk')) {
+  ani.options(pdftk = '/tools/pdftk/pdftk.exe')
+}
+panderOptions('keep.trailing.zeros', T)
+panderOptions('round', 2)
+panderOptions('digits', 19)
+
+if (!exists("id.amostragem")) {
+  id.amostragem <- 1
+}
+MUS.seed <- id.amostragem %% 1000
+
 if (!exists("MUS.step")) {
   MUS.step <- 3
 }
 
 use.pander <- TRUE
 conf_level <- 0.95
-H <- 3  # number of strata
 if ( !"sdados" %in% ls() ) {
+  H <- 3  # number of strata
   sdados = data.frame("stratum"=1:H,
     "conf_level"=rep(conf_level, H),
     "pct_tolerable"=rep(0.1, H),
@@ -91,50 +138,12 @@ if(!"selected" %in% colnames(dados)) {
 if (!exists("inclui_total")) {
   inclui_total <- FALSE
 }
-if (!inclui_total) {
+if (!inclui_total && MUS.step!=4) {
   plans <- list()
   extract <- list()
   audited <- list()
   audited.high <- list()
   evaluation <- list()
-}
-format_si <- function(...) {
-  function(x) {
-    limits <- c(1e0,   1e3, 1e6,   1e9,   1e12)
-    prefix <- c(" ",   "k", "M",   "B",   "T")
-
-    # Vector with array indices according to position in intervals
-    i <- findInterval(abs(x), limits)
-
-    # Set prefix to " " for very small values < 1e-24
-    i <- ifelse(i==0, which(limits == 1e0), i)
-
-    paste(format(round(x/limits[i], 1),
-                 trim=TRUE, scientific=FALSE, ...),
-          prefix[i])
-  }
-}
-format_pct <- function(...) {
-  function(x) {
-      x*100
-  }
-}
-format_exp <- function(...) {
-  function(x) {
-    x <- exp(x)
-    limits <- c(1e0,   1e3, 1e6,   1e9,   1e12)
-    prefix <- c(" ",   "k", "M",   "B",   "T")
-
-    # Vector with array indices according to position in intervals
-    i <- findInterval(abs(x), limits)
-
-    # Set prefix to " " for very small values < 1e-24
-    i <- ifelse(i==0, which(limits == 1e0), i)
-
-    paste(format(round(x/limits[i], 1),
-                 trim=TRUE, scientific=FALSE, ...),
-          prefix[i])
-  }
 }
 
 strata <- unique(sdados$stratum)
@@ -154,9 +163,10 @@ dm <- "R-MUS"
 bindtextdomain(dm)
 
 cat("\n\n")
-
+resultados <- rep(NULL, length(strata))
 for (s in strata) {
   numStratum <- s
+  resu <- NULL
   if (inclui_total & length(strata)>1) {
     if (s>1) {
       cat("\n\\newpage\n")
@@ -189,7 +199,7 @@ for (s in strata) {
     if (MUS.step > 1) {
 #      cat("\n\textracting...\n")
       if (!inclui_total) {
-        extract[[s]] <- MUS.extraction(plans[[s]], seed=123, obey.n.as.min=TRUE)
+        extract[[s]] <- MUS.extraction(plans[[s]], seed=MUS.seed, obey.n.as.min=TRUE)
         dados$selected[dados$stratum == s] <- 0
         dados$selected[dados$id %in% extract[[s]]$sample$id] <- 1
         dados$selected[dados$id %in% extract[[s]]$high.values$id] <- 2
@@ -207,6 +217,7 @@ for (s in strata) {
       }
       print(evaluation[[s]], print.misstatements=FALSE, style="report", use.pander=use.pander)
       cat("\n")
+      resultados[s] <- evaluation[[s]]$acceptable
     }
 
     if (MUS.step > 3) {
@@ -353,29 +364,25 @@ for (s in strata) {
         cat("\n- diagnostico.txt\n\n")
       }
     }
-    if (MUS.step > 9) {
-
-      cat("\n\n\tre-evaluating...\n\n")
-      # extract[[s]]$confidence.level=0.95
-      #extract[[s]]$expected.error=extract[[s]]$expected.error*1.5
-      tolratio <- extract[[s]]$tolerable.error/extract[[s]]$expected.error
-
-      exp.error2 <- evaluation[[1]]$Results.Total$Gross.most.likely.error[1]/evaluation[[1]]$book.value
-      tol.error2 <- exp.error2 * tolratio
-
-      extract[[s]]$tolerable.error <- tol.error2*extract[[s]]$book.value
-      extract[[s]]$expected.error <- exp.error2*extract[[s]]$book.value
-      nn <- calc.n(extract[[s]]$confidence.level, extract[[s]]$tolerable.error/extract[[s]]$book.value, extract[[s]]$expected.error/extract[[s]]$book.value)
-      cat("\n\tnew sample size: n = ", nn, "\n")
-      # Evaluate the sample, cache and print it
-      evaluation[[s]] <- MUS.evaluation(extract[[s]], audited[[s]], audited.high[[s]])
-      print(evaluation[[s]], use.pander=use.pander)
-    }
 
   }
 }
 
-selected <- dados$id[dados$selected>0]
+selected <- dados$id[dados$selected==1]
+highvalues <- dados$id[dados$selected==2]
+#resultados
+
+if ((MUS.step > 4) & file.exists('work.pdf')) {
+  sink("diagnostico.txt")
+  cat("Informações da Sessão\n\n")
+  print(sessionInfo())
+  cat("\n\nVersão do R\n\n")
+  print(version)
+  sink()
+  write.csv(dados, file="dados.csv")
+  pdftk("work.pdf", "attach_files dados.csv example.R diagnostico.txt", "report.pdf" )
+  unlink(c("work.pdf", "dados.csv", "diagnostico.txt", "example.Rmd", "example.R", "logo.png"))
+}
 
 #moment.bound(c(rep(0, 96), -.16, .04, .18, .47))
 #moment.bound(c(rep(0, 95), -75, -25, 25, 40, 60, 75)/100)

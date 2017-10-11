@@ -28,6 +28,6 @@ print.MUS.planning.result <- function(x, print.title=TRUE, style="default", use.
 		cat("\n-", .f(gettext("Tolerable Error (Materiality)", domain=dm)), x$tolerable.error)
 		cat("\n-", .f(gettext("Tolerable Error Rate", domain=dm)), .percent(x$tolerable.error / x$book.value))
 		cat("\n-", .f(gettext("Sample size", domain=dm)), x$n)
-		cat("\n-", .f(gettext("High Value Threshold", domain=dm)), .value(x$High.value.threshold), "\n")
+		cat("\n-", .f(gettext("High Value Threshold", domain=dm)), x$High.value.threshold, "\n")
 	}
 }
