@@ -310,7 +310,7 @@ for (s in strata) {
                     pop.grid +
                     scale_y_continuous(limits = quantile(pop$book.value, c(0.01, 0.99)), labels=format_si()) +
                     ggtitle("Popula\u{E7}\u{E3}o") +
-                    xlab("rubrica") + ylab("book.value")
+                    xlab("rubrica") + ylab("valor informado")
             suppressWarnings(print(g2))
         } else {
           g1 <- ggplot(orubricas[order(-orubricas$value),], aes(x=1:nrow(orubricas), y=cumsum(value)/evaluation[[s]]$book.value)) +
@@ -329,26 +329,6 @@ for (s in strata) {
         }
       }
 
-      # print cumsum of suppliers
-      if (FALSE) {
-        mat.fornec <- c(by(evaluation[[s]]$data$book.value, evaluation[[s]]$data$fornec, sum))
-        df.fornec <- data.frame(fornec=names(mat.fornec), book.value=mat.fornec)
-        rownames(df.fornec) <- names(mat.fornec)
-        df.fornec <- df.fornec[order(-df.fornec$book.value),]
-        df.fornec$seq <- (1:nrow(df.fornec))/nrow(df.fornec)
-        df.fornec$csum <- cumsum(df.fornec$book.value)/evaluation[[s]]$book.value
-        #plot(cumsum(df.fornec$book.value/evaluation[[1]]$book.value))
-        h4 <- ggplot(df.fornec, aes(x=seq, y=csum)) +
-                geom_line(color=rgb(0,0.7,0.1,1), size=1) +
-                geom_point(data=df.fornec[ceiling(1+(nrow(df.fornec)-1)*seq(0, 1, 0.1)),], aes(x=seq, y=csum),
-                  color="steelblue", size=3, shape=21, fill="steelblue", stroke=1.5) +
-                scale_y_continuous(labels=format_pct()) +
-                scale_x_continuous(labels=format_pct()) +
-                ggtitle("Cumsum - Population supplier") +
-                xlab("suppliers") + ylab("cumsum book.value")
-
-        print(h4)
-      }
       par(op)
       cat("\n")
 

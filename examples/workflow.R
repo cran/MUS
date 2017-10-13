@@ -12,7 +12,8 @@ origem <- paste0(origem, "/")
 
 file.copy(c(paste0(origem, "example.R")), getwd())
 # carrega os data frames
-H = 3  # qtd de estratos
+H <- 3  # qtd de estratos
+conf_level <- 0.95
 sdados = data.frame("stratum"=1:H,
 	"conf_level"=rep(conf_level, H),
 	"pct_tolerable"=rep(0.1, H),
