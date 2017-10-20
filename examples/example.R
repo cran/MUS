@@ -164,9 +164,9 @@ bindtextdomain(dm)
 
 cat("\n\n")
 resultados <- rep(NULL, length(strata))
+erro.provavel <- rep(NULL, length(strata))
 for (s in strata) {
   numStratum <- s
-  resu <- NULL
   if (inclui_total & length(strata)>1) {
     if (s>1) {
       cat("\n\\newpage\n")
@@ -218,6 +218,9 @@ for (s in strata) {
       print(evaluation[[s]], print.misstatements=FALSE, style="report", use.pander=use.pander)
       cat("\n")
       resultados[s] <- evaluation[[s]]$acceptable
+      mle <- evaluation[[s]]$MLE.final
+      tot <- evaluation[[s]]$book.value - ifelse(is.data.frame(evaluation[[s]]$filled.high.values), sum(evaluation[[s]]$filled.high.values$book.value), 0)
+      erro.provavel[s] <- mle / tot
     }
 
     if (MUS.step > 3) {

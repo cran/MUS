@@ -70,7 +70,14 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 		res$UEL.highrate.value <- x$UEL.high.error.rate
 		res$UEL.highrate.rate <- .percent(res$UEL.highrate.value / population.value)
 
-		tbl <- matrix(nrow=9, ncol=4)
+		res$MLE.lowrate.value <- x$MLE.low.error.rate
+		res$MLE.lowrate.rate <- .percent(res$MLE.lowrate.value / population.value)
+		res$MLE.highrate.value <- x$MLE.high.error.rate
+		res$MLE.highrate.rate <- .percent(res$MLE.highrate.value / population.value)
+		res$MLE.final.value <- x$MLE.final
+		res$MLE.final.rate <- .percent(res$MLE.final.value / population.value)
+
+		tbl <- matrix(nrow=11, ncol=4)
 		tbl[1,] = c(gettext("Audited Misstatements", domain=dm), res$audited.miss.qty , .value(res$audited.miss.value), res$audited.miss.rate)
 		tbl[2,] = c(gettext("Audited Overstatements", domain=dm), res$audited.over.qty , .value(res$audited.over.value), res$audited.over.rate)
 		tbl[3,] = c(gettext("Audited Understatements", domain=dm), res$audited.under.qty , .value(res$audited.under.value), res$audited.under.rate)
@@ -83,7 +90,10 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 		} else {
 			tbl[6,] = c(gettext("Upper Error Limit (Final)", domain=dm), "-" , .value(res$UEL.lowrate.value), res$UEL.lowrate.rate)
 		}
-		tbl[9,] = c(gettext("Most Likely Error", domain=dm), "-" , .value(res$most.likely.error.value), res$most.likely.error.rate)
+#		tbl[9,] = c(gettext("Most Likely Error", domain=dm), "-" , .value(res$most.likely.error.value), res$most.likely.error.rate)
+		tbl[9,] = c(gettext("Most Likely Error", domain=dm), "-" , .value(res$MLE.final.value), res$MLE.final.rate)
+		tbl[10,] = c(gettext("MLE (Low Error Rate)", domain=dm), "-" , .value(res$MLE.lowrate.value), res$MLE.lowrate.rate)
+		tbl[11,] = c(gettext("MLE (High Error Rate)", domain=dm), "-" , .value(res$MLE.highrate.value), res$MLE.highrate.rate)
 #		tbl[2,] <- Vectorize(.italic)(tbl[2,])
 #		tbl[3,] <- Vectorize(.italic)(tbl[3,])
 #		tbl[7,] <- Vectorize(.italic)(tbl[7,])
@@ -102,6 +112,7 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 			cat("\n-", .f(gettext("Sample Misstatement Amount", domain=dm)), res$sample.miss.value, "(", res$sample.miss.rate , ")")
 			cat("\n-", .f(gettext("High Values Misstatement Amount", domain=dm)), res$high.miss.value, "(", res$high.miss.rate, ")")
 			cat("\n-", .f(gettext("Audited Misstatement Amount", domain=dm)), res$audited.miss.value, "(", res$audited.miss.rate, ")")
+#			cat("\n-", .f(gettext("Most Likely Error", domain=dm)), .write.UEL(x, res$most.likely.error.value))
 			cat("\n-", .f(gettext("Most Likely Error", domain=dm)), .write.UEL(x, res$most.likely.error.value))
 			if (res$tainting.order != "decreasing") {
 				cat("\n-", gettext("Tainting Order", domain=dm), res$tainting.order)

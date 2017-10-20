@@ -185,11 +185,12 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	# calculate high error rate evaluation
 	ratios <- 1 - filled.sample[,col.name.audit.values]/filled.sample[,extract$col.name.book.values]
 	qty_errors <- sum(ratios!=0)
+
 	ratios_mean <- mean(ratios)
 	ratios_sd <- sd(ratios)
 	N <- nrow(extract$data) - nrow(filled.high.values)
 	R <- ifelse(interval.type == "two-sided",  1 - (1- extract$confidence.level) / 2, extract$confidence.level)
-	U <- qt(R, qty_errors - 1)
+	U <- qt(R, pmax(R, qty_errors - 1))
 	if (class(filled.high.values)=="data.frame") {
 		Y <- sum(extract$data[,extract$col.name.book.values]) - sum(filled.high.values[,extract$col.name.book.values])
 		high.values.error <- sum(filled.high.values[,extract$col.name.book.values]-filled.high.values[,col.name.audit.values])
@@ -206,16 +207,21 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 		acceptable = acceptable.high.error.rate )
 
 	# gives warning if high error rate evaluation might be appropriate
+	MLE.low.error.rate <- Results.Total$Net.most.likely.error[1]
+	MLE.high.error.rate <- high.error.rate$most.likely.error
+	MLE.final <- MLE.low.error.rate
 	if (max(Results.Sample$Number.of.Errors)>=20) {
 		if (print.advice) {
 			message("\n** ", "You had at least 20 errors in the sample. High Error Rate evaluation recommended.")
 		}
 		acceptable <- acceptable.high.error.rate
+		MLE.final <- MLE.high.error.rate
 	}
 
 	# return all results and parameters
 	result <- c(extract, list(filled.sample=filled.sample, filled.high.values=filled.high.values, col.name.audit.values=col.name.audit.values, Overstatements.Result.Details=over, Understatements.Result.Details=under, Results.Sample=Results.Sample, Results.High.values=Results.High.values, Results.Total=Results.Total, acceptable=acceptable, tainting.order=tainting.order,
 	UEL.low.error.rate=UEL.low.error.rate, UEL.high.error.rate=UEL.high.error.rate,
+	MLE.low.error.rate=MLE.low.error.rate, MLE.high.error.rate=MLE.high.error.rate, MLE.final=MLE.final,
 	acceptable.low.error.rate=acceptable.low.error.rate, acceptable.high.error.rate=acceptable.high.error.rate,
 	high.error.rate=high.error.rate, combined=combined))
 	class(result) <- "MUS.evaluation.result"

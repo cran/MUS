@@ -1,22 +1,23 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: MUS 0.1.5\n"
 "Report-Msgid-Bugs-To: https://github.com/alsguimaraes/MUS\n"
-"POT-Creation-Date: 2017-10-06 14:15-0300\n"
-"PO-Revision-Date: 2017-10-06 10:22\n"
-"Last-Translator: \n"
-"Language-Team: \n"
-"Language: ll\n"
+"POT-Creation-Date: 2017-10-20 15:22\n"
+"PO-Revision-Date: 2017-10-20 15:22\n"
+"Last-Translator:  \n"
+"Language-Team:  \n"
+"Language: LL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.4\n"
 
 msgid "x has to be a vector or an object of type MUS.evaluation.result. Use function MUS.evaluate to create such an object."
 msgstr ""
 
-msgid "lx must be a list with one or more MUS.evaluation.result objects."
+msgid "x has to be an object from type MUS.evaluation.result. Use function MUS.evaluate to create such an object."
+msgstr ""
+
+msgid "object.list must be a list with one or more MUS.evaluation.result objects."
 msgstr ""
 
 msgid "extract has to be an object from type MUS.extraction.result. Use function MUS.extraction to create such an object."
@@ -56,6 +57,9 @@ msgid "The filled.high.values requires a column with the audit values and the na
 msgstr ""
 
 msgid "If col.name.riskweights is not NULL, the filled.high.values requires a column with the col.name.riskweights and the name of this column has to be provided by parameter col.name.riskweights (default NULL)."
+msgstr ""
+
+msgid "**"
 msgstr ""
 
 msgid "You had at least 20 errors in the sample. High Error Rate evaluation recommended."
@@ -127,9 +131,6 @@ msgstr ""
 msgid "n.optimal is not plausible (greater than upper bound nip1), internal error, please report as bug."
 msgstr ""
 
-msgid "x has to be an object from type MUS.evaluation.result. Use function MUS.evaluate to create such an object."
-msgstr ""
-
 msgid "Evaluation Results"
 msgstr ""
 
@@ -161,6 +162,12 @@ msgid "Upper Error Limit (Final)"
 msgstr ""
 
 msgid "Most Likely Error"
+msgstr ""
+
+msgid "MLE (Low Error Rate)"
+msgstr ""
+
+msgid "MLE (High Error Rate)"
 msgstr ""
 
 msgid "Description"
@@ -336,3 +343,4 @@ msgstr ""
 
 msgid "Sample size"
 msgstr ""
+
