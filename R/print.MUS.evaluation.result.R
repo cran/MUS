@@ -77,7 +77,7 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 		res$MLE.final.value <- x$MLE.final
 		res$MLE.final.rate <- .percent(res$MLE.final.value / population.value)
 
-		tbl <- matrix(nrow=11, ncol=4)
+		tbl <- matrix(nrow=9, ncol=4)
 		tbl[1,] = c(gettext("Audited Misstatements", domain=dm), res$audited.miss.qty , .value(res$audited.miss.value), res$audited.miss.rate)
 		tbl[2,] = c(gettext("Audited Overstatements", domain=dm), res$audited.over.qty , .value(res$audited.over.value), res$audited.over.rate)
 		tbl[3,] = c(gettext("Audited Understatements", domain=dm), res$audited.under.qty , .value(res$audited.under.value), res$audited.under.rate)
@@ -92,8 +92,8 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 		}
 #		tbl[9,] = c(gettext("Most Likely Error", domain=dm), "-" , .value(res$most.likely.error.value), res$most.likely.error.rate)
 		tbl[9,] = c(gettext("Most Likely Error", domain=dm), "-" , .value(res$MLE.final.value), res$MLE.final.rate)
-		tbl[10,] = c(gettext("MLE (Low Error Rate)", domain=dm), "-" , .value(res$MLE.lowrate.value), res$MLE.lowrate.rate)
-		tbl[11,] = c(gettext("MLE (High Error Rate)", domain=dm), "-" , .value(res$MLE.highrate.value), res$MLE.highrate.rate)
+#		tbl[10,] = c(gettext("MLE (Low Error Rate)", domain=dm), "-" , .value(res$MLE.lowrate.value), res$MLE.lowrate.rate)
+#		tbl[11,] = c(gettext("MLE (High Error Rate)", domain=dm), "-" , .value(res$MLE.highrate.value), res$MLE.highrate.rate)
 #		tbl[2,] <- Vectorize(.italic)(tbl[2,])
 #		tbl[3,] <- Vectorize(.italic)(tbl[3,])
 #		tbl[7,] <- Vectorize(.italic)(tbl[7,])

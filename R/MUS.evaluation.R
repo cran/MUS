@@ -210,7 +210,7 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	MLE.low.error.rate <- Results.Total$Net.most.likely.error[1]
 	MLE.high.error.rate <- high.error.rate$most.likely.error
 	MLE.final <- MLE.low.error.rate
-	if (max(Results.Sample$Number.of.Errors)>=20) {
+	if (max(Results.Sample$Number.of.Errors) >= 20) {
 		if (print.advice) {
 			message("\n** ", "You had at least 20 errors in the sample. High Error Rate evaluation recommended.")
 		}
