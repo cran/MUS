@@ -1,4 +1,7 @@
 e217e5efb53418623ec80388baad1a04 *DESCRIPTION
+d7640cbd51ccdd8fac8ac68885ee34fc *examples/example.R
+bd1409a941923f8e6e9a83db107ea854 *examples/example.Rmd
+2553531635d707000aa31253b5f274ef *examples/workflow.R
 32631548c047c541ee897b741ad2953e *inst/po/en@quot/LC_MESSAGES/R-MUS.mo
 7d5437be3a85501fe652b97efd3a585c *inst/po/pt_BR/LC_MESSAGES/R-MUS.mo
 b8d9689af48ca28fc3c4c470e293c1c6 *man/MUS-package.Rd
@@ -15,14 +18,14 @@ d63b1a2b857ebb5f11fc1eb8b5f6b19d *man/MUS.factor.Rd
 c7e85c735e646069ec888201aaf083b1 *man/print.MUS.evaluation.result.Rd
 4e1716e1ea1a4f37d589ec334a6b543b *man/print.MUS.extraction.result.Rd
 d0f925ae487b32a55e2487062eef2fb7 *man/print.MUS.planning.result.Rd
-2b4383dfac8db188a969ebea9768cf3c *MD5
+370c09e1c149936f941c01fbb80d50f1 *MD5
 1faebf3391ec44409007b4658382bfe9 *NAMESPACE
 b6db16085c64799748996dd17991a682 *po/R-MUS.pot
 8aae8d9f23515df4c9a0bb23a27401de *po/R-pt_BR.po
 177c1abba09291d8b502a473533589b4 *R/MUS.bounds.R
 4108a5e86888565eb8245a56e9cc006d *R/MUS.combine.R
 8f70084a378749932fb39307fa5ad51c *R/MUS.evaluation.R
-f826cd0848c5d0576bf354d8bfd49d05 *R/MUS.extraction.R
+2b184e6308f293d702b5411657104ee4 *R/MUS.extraction.R
 4dc4fbe433b00f716754b6910440b5ea *R/MUS.planning.R
 d9e2621d7e75625e83bc988f67c3526a *R/print.MUS.evaluation.result.R
 7758ec42e5ebb60844c92cd8fae4bde5 *R/print.MUS.extraction.result.R

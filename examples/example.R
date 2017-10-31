@@ -93,11 +93,11 @@ if (!exists("MUS.step")) {
 use.pander <- TRUE
 conf_level <- 0.95
 if ( !"sdados" %in% ls() ) {
-  H <- 3  # number of strata
+  H <- 1  # number of strata
   sdados = data.frame("stratum"=1:H,
     "conf_level"=rep(conf_level, H),
-    "pct_tolerable"=rep(0.1, H),
-    "pct_expected"=rep(0.05, H)
+    "pct_tolerable"=rep(0.15, H),
+    "pct_expected"=rep(0.10, H)
   )
 }
 sdados <- calc.all(sdados)
@@ -125,6 +125,7 @@ soma.rubrica <- c(by(dados$book.value, dados$id.rubrica, sum))
 qtd.rubrica <- c(by(dados$book.value, dados$id.rubrica, length))
 rubricas <- data.frame(id=as.numeric(names(soma.rubrica)), nome=uniq.rubrica[as.numeric(names(soma.rubrica))], qty=as.numeric(qtd.rubrica), value=as.numeric(soma.rubrica))
 
+rownames(dados) <- c(1:nrow(dados))
 if(!"id" %in% colnames(dados)) {
   dados$id <- c(1:nrow(dados))
 }
@@ -202,7 +203,9 @@ for (s in strata) {
         extract[[s]] <- MUS.extraction(plans[[s]], seed=MUS.seed, obey.n.as.min=TRUE)
         dados$selected[dados$stratum == s] <- 0
         dados$selected[dados$id %in% extract[[s]]$sample$id] <- 1
-        dados$selected[dados$id %in% extract[[s]]$high.values$id] <- 2
+        if (is.data.frame(extract[[s]]$high.values)) {
+          dados$selected[dados$id %in% extract[[s]]$high.values$id] <- 2
+        }
       }
       print(extract[[s]], style="report", use.pander=use.pander)
     }
@@ -281,7 +284,7 @@ for (s in strata) {
               geom_histogram(bins = 6, color="white", fill=rgb(0,0.7,0.1,0.4)) +
               pop.grid +
 #              scale_x_log10(labels=format_si()) +
-              scale_x_continuous(limits = quantile(pop$book.value, c(0.01, 0.99)), labels=format_si()) +
+              scale_x_continuous(labels=format_si()) +
               ggtitle("Popula\u{E7}\u{E3}o") +
               xlab("valor informado") + ylab("qtd")
       suppressWarnings(print(h4))
@@ -289,14 +292,14 @@ for (s in strata) {
       if (merge_histograms) {
           h5 <- ggplot(fsample, aes(x=as.factor(stratum), y=book.value)) +
               geom_boxplot(fill=rgb(0,0.7,0.1,0.4), outlier.color=NA) +
-              scale_y_continuous(limits = quantile(fsample$book.value, c(0.01, 0.99)), labels=format_si()) +
+              scale_y_continuous(labels=format_si()) +
               ggtitle("Amostra") +
               xlab("estrato") + ylab("valor informado")
         suppressWarnings(print(h5))
           h6 <- ggplot(pop, aes(x=as.factor(stratum), y=book.value)) +
                   geom_boxplot(fill=rgb(0,0.7,0.1,0.4), outlier.color=NA) +
                   pop.grid +
-                  scale_y_continuous(limits = quantile(pop$book.value, c(0.01, 0.99)), labels=format_si()) +
+                  scale_y_continuous(labels=format_si()) +
                   ggtitle("Popula\u{E7}\u{E3}o") +
                   xlab("estrato") + ylab("valor informado")
         suppressWarnings(print(h6))
@@ -304,14 +307,14 @@ for (s in strata) {
         if (nrow(trubricas) <= 20) {
             g1 <- ggplot(fsample, aes(x=as.factor(id.rubrica), y=book.value)) +
                     geom_boxplot(fill=rgb(0,0.7,0.1,0.4), outlier.color=NA) +
-                    scale_y_continuous(limits = quantile(fsample$book.value, c(0.01, 0.99)), labels=format_si()) +
+                    scale_y_continuous(labels=format_si()) +
                     ggtitle("Amostra") +
                     xlab("rubrica") + ylab("valor informado")
             suppressWarnings(print(g1))
             g2 <- ggplot(pop, aes(x=as.factor(id.rubrica), y=book.value)) +
                     geom_boxplot(fill=rgb(0,0.7,0.1,0.4), outlier.color=NA) +
                     pop.grid +
-                    scale_y_continuous(limits = quantile(pop$book.value, c(0.01, 0.99)), labels=format_si()) +
+                    scale_y_continuous(labels=format_si()) +
                     ggtitle("Popula\u{E7}\u{E3}o") +
                     xlab("rubrica") + ylab("valor informado")
             suppressWarnings(print(g2))
@@ -342,7 +345,7 @@ for (s in strata) {
       pandoc.table(trubricas, justify="clrrr")
       if (inclui_total & s==1) {
         MUS:::.title("Anexos", use.pander=TRUE, level=2)
-        cat("\n- dados.csv")
+        cat("\n- dados.csv")/
         cat("\n- script.R")
         cat("\n- diagnostico.txt\n\n")
       }

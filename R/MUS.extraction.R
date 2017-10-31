@@ -19,8 +19,8 @@ MUS.extraction <- function(plan, start.point=NULL, seed=NULL, obey.n.as.min=FALS
 		interval <- sum(sample.population[,plan$col.name.book.values])/(plan$n-nrow(high.values))
 		# If the interval is not equal to the old interval, there might be other items with book value between old and new interval. Move them to high interval and recalculate interval.
 		while(oldinterval!=interval){
-			high.values <- subset(plan$data, with(plan$data, get(plan$col.name.book.values))>=plan$High.value.threshold)
-			sample.population <- subset(plan$data, with(plan$data, get(plan$col.name.book.values))<plan$High.value.threshold)
+			high.values <- subset(plan$data, with(plan$data, get(plan$col.name.book.values))>=interval)
+			sample.population <- subset(plan$data, with(plan$data, get(plan$col.name.book.values))<interval)
 			oldinterval <- interval
 			interval <- sum(sample.population[,plan$col.name.book.values])/(plan$n-nrow(high.values))
 		}
@@ -34,7 +34,7 @@ MUS.extraction <- function(plan, start.point=NULL, seed=NULL, obey.n.as.min=FALS
 	if (is.null(start.point)) start.point <- runif(n=1, min=0, max=interval)
 
 	# calculate the units to be sampled, one in each interval
-	samplingunits <- round(start.point+0:plan$n*round(interval, digits=2))
+	samplingunits <- round(start.point+0:(plan$n-nrow(high.values))*round(interval, digits=2))
 
 	# add running sum
 	sample.population <- cbind(sample.population, MUS.total=cumsum(sample.population[, plan$col.name.book.values]))
