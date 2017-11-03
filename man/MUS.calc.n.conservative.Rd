@@ -18,7 +18,7 @@
 \value{
   Returns the (conservative) sample size.
 }
-\author{Henning Prömpers <henning@proempers.net>}
+\author{Andre Guimaraes <alsguimaraes@gmail.com>}
 \examples{
 
 MUS.calc.n.conservative(0.95, 100000, 50000, 10000000)

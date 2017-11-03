@@ -18,7 +18,7 @@
 \value{
     Upper Error Limit calculed using the multinomial bound.
 }
-\author{Henning Prömpers <henning@proempers.net>}
+\author{Andre Guimaraes <alsguimaraes@gmail.com>}
 \seealso{
   \code{\link{MUS.evaluation}} for evaluation of the audited sample.
 }

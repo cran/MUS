@@ -5,7 +5,7 @@ Title: Monetary Unit Sampling and Estimation Methods, Widely Used in
         Auditing
 Version: 0.1.5
 Date: 2017-09-15
-Author: Henning Prömpers
+Author: Henning Prömpers, André Guimarães
 Maintainer: Henning Prömpers <henning@proempers.net>
 Description: Sampling and evaluation methods to apply Monetary Unit Sampling (or in older literature Dollar Unit Sampling) during an audit of financial statements.
 Depends: R (>= 3.3.2), stats

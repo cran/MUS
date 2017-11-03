@@ -49,7 +49,9 @@ MUS.extraction <- function(plan, start.point=NULL, seed=NULL, obey.n.as.min=FALS
 	interval <- sum(sample.population[,plan$col.name.book.values])/nrow(sample)
 
 	# return all results, parameters and planning object as list for further processing
-	result <- c(plan, list(start.point=start.point, seed=seed, obey.n.as.min=obey.n.as.min, high.values=high.values, sample.population=sample.population, sampling.interval=interval, sample=sample, combined=combined))
+	result <- c(plan, list(start.point=start.point, seed=seed, obey.n.as.min=obey.n.as.min,
+		high.values=high.values, sample.population=sample.population,
+		sampling.interval=interval, sample=sample, extensions=0, n.qty = c( nrow(sample)+nrow(high.values) ), combined=combined))
 	class(result) <- "MUS.extraction.result"
 	return(result)
 }

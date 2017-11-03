@@ -16,7 +16,7 @@
 \value{
   An object of the same type of the first item in the list is returned containing an aggregation of the objects in the list.
 }
-\author{Henning Prömpers <henning@proempers.net>}
+\author{Andre Guimaraes <alsguimaraes@gmail.com>}
 \examples{
 
 ## Simple Example

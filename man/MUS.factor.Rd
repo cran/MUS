@@ -16,7 +16,7 @@
 \value{
   Returns the MUS factor.
 }
-\author{Henning Prömpers <henning@proempers.net>}
+\author{Andre Guimaraes <alsguimaraes@gmail.com>}
 \examples{
 
 MUS.factor(0.95, 0.5)

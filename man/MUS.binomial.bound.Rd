@@ -20,7 +20,7 @@
 \value{
     Upper Error Limit calculed using the binomial bound.
 }
-\author{Henning Prömpers <henning@proempers.net>}
+\author{Andre Guimaraes <alsguimaraes@gmail.com>}
 \seealso{
   \code{\link{MUS.evaluation}} for evaluation of the audited sample.
 }
