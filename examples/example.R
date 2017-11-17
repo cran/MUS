@@ -222,8 +222,9 @@ for (s in strata) {
       cat("\n")
       resultados[s] <- evaluation[[s]]$acceptable
       mle <- evaluation[[s]]$MLE.final
+      errohighvalues <- evaluation[[s]]$high.miss.value
       tot <- evaluation[[s]]$book.value - ifelse(is.data.frame(evaluation[[s]]$filled.high.values), sum(evaluation[[s]]$filled.high.values$book.value), 0)
-      erro.provavel[s] <- mle / tot
+      erro.provavel[s] <- (mle - errohighvalues) / tot
     }
 
     if (MUS.step > 3) {
