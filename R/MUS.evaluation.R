@@ -55,7 +55,9 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 					Precision.Gap.widening=c(overstatements=0, understatements=0),
 					Total.Precision=c(overstatements=0, understatements=0),
 					Gross.upper.error.limit=c(overstatements=0, understatements=0),
-					Net.upper.error.limit=0)
+					Net.upper.error.limit=0,
+					Gross.Value.of.Errors=c(overstatements=0, understatements=0)
+				)
 		filled.sample <- "Not required because no sample items were selected during extraction"
 		over <- "Not applicable because no sample items were selected during extraction"
 		under <- "Not applicable because no sample items were selected during extraction"
@@ -89,6 +91,14 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 			tord <- sample(tmp)
 		}
 		ds <- cbind(filled.sample, d=tmp, tord=tord) # calculate d's and add to data frame
+
+		if(is.null(col.name.riskweights)) {
+			errors <- ds[,extract$col.name.book.values]-ds[,col.name.audit.values]
+		} else {
+			errors <- (ds[,extract$col.name.book.values]-ds[,col.name.audit.values])/ds[,col.name.riskweights]
+			# if risk weights are provided, also multiply with them
+		}
+
 		ds <- subset(ds, ds$d>0) # filter out all correct (and understatements which will be handled later)
 		ds <- ds[order(ds$tord, decreasing=TRUE),] # sort d's descendend
 		idx <- rownames(ds)
@@ -124,7 +134,6 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 		}
 		ds <- round(ds, digits=4)
 		under <- .MUS.precision.gap.widening.table(ds, idx, population.amount, extract$confidence.level, filled.sample) # calculate table
-
 		# calculate results table
 		Gross.most.likely.error=c(overstatements=(sum(over$Tainting)-1), understatements=(sum(under$Tainting)-1))*extract$sampling.interval # also required as intermediate step for later calculations
 		Gross.upper.error.limit=c(overstatements=max(over$Stage.UEL.max), understatements=max(under$Stage.UEL.max))*extract$sampling.interval # also required as intermediate step for later calculations
@@ -137,7 +146,9 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 					Precision.Gap.widening=Gross.upper.error.limit-Gross.most.likely.error-Basic.Precision, # values that are not zero came from rounding
 					Total.Precision=Gross.upper.error.limit-Gross.most.likely.error,
 					Gross.upper.error.limit=Gross.upper.error.limit,
-					Net.upper.error.limit=Gross.upper.error.limit-Gross.most.likely.error+c(overstatements=1, understatements=-1)*sum(Gross.most.likely.error*c(1,-1)))
+					Net.upper.error.limit=Gross.upper.error.limit-Gross.most.likely.error+c(overstatements=1, understatements=-1)*sum(Gross.most.likely.error*c(1,-1)),
+					Gross.Value.of.Errors=c(overstatements=sum(subset(errors, errors>0)), understatements=sum(subset(errors, errors<0)))
+				)
 	}
 
 	# if extracted high items have no elements (only sample items needs to be tested) do not evaluate and use zeros instead
@@ -157,7 +168,6 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	if (!is.null(col.name.riskweights)) if (!is.element(col.name.riskweights, names(filled.high.values))) stop("If col.name.riskweights is not NULL, the filled.high.values requires a column with the col.name.riskweights and the name of this column has to be provided by parameter col.name.riskweights (default NULL).")
 
 	# evaluate high value items
-		errors <- filled.high.values[,extract$col.name.book.values]-filled.high.values[,col.name.audit.values]
 		if(is.null(col.name.riskweights)) {
 			errors <- filled.high.values[,extract$col.name.book.values]-filled.high.values[,col.name.audit.values]
 		} else {
@@ -173,9 +183,11 @@ MUS.evaluation <- function(extract, filled.sample, filled.high.values, col.name.
 	Results.Total <- list(  Total.number.of.items.examined=Results.Sample$Sample.Size+Results.High.values$Number.of.high.value.items,
 				Number.of.Errors=Results.Sample$Number.of.Errors+Results.High.values$Number.of.Errors,
 				Gross.most.likely.error=Results.Sample$Gross.most.likely.error+Results.High.values$Gross.Value.of.Errors,
+				Gross.Value.of.Errors=Results.Sample$Gross.Value.of.Errors+Results.High.values$Gross.Value.of.Errors,
 				Net.most.likely.error=c(overstatements=1, understatements=-1)*sum(Results.Sample$Gross.most.likely.error)+Results.High.values$Net.Value.of.Errors*c(1,-1),
 				Gross.upper.error.limit=Results.Sample$Gross.upper.error.limit+Results.High.values$Gross.Value.of.Errors,
-				Net.upper.error.limit=Results.Sample$Gross.upper.error.limit-Results.Sample$Gross.most.likely.error+c(overstatements=1, understatements=-1)*sum(Results.Sample$Gross.most.likely.error*c(1,-1))+Results.High.values$Net.Value.of.Errors*c(1,-1))
+				Net.upper.error.limit=Results.Sample$Gross.upper.error.limit-Results.Sample$Gross.most.likely.error+c(overstatements=1, understatements=-1)*sum(Results.Sample$Gross.most.likely.error*c(1,-1))+Results.High.values$Net.Value.of.Errors*c(1,-1)
+		)
 
 	# extract a final statement if population is acceptable (provided the confidence level)
 	UEL.low.error.rate <- max(Results.Total$Net.upper.error.limit*c(1,-1))

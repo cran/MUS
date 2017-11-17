@@ -34,12 +34,13 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 		res$sample.miss.qty <- max(x$Results.Sample$Number.of.Errors)
 		res$sample.miss.value <- sum(sample.misstatements)
 		res$sample.miss.rate <- .percent(res$sample.miss.value/res$sample.book.value)
+		population.value <- x$book.value
 		if (class(x$filled.high.values)=="data.frame") {
 			high.misstatements <- x$filled.high.values[,x$col.name.book.values] - x$filled.high.values[,x$col.name.audit.values]
 			res$high.book.value <- sum(x$filled.high.values[,x$col.name.book.values])
 			res$high.miss.qty <- sum(high.misstatements != 0)
 			res$high.miss.value <- sum(high.misstatements)
-			population.value <- x$book.value - sum(x$filled.high.values[,x$col.name.book.values])
+			#population.value <- x$book.value - sum(x$filled.high.values[,x$col.name.book.values])
 			res$high.over.value <- sum(high.misstatements[high.misstatements>0])
 			res$high.under.value <- sum(high.misstatements[high.misstatements<0])
 			res$high.over.qty <- x$Results.High.values$Number.of.Errors["overstatements"]
@@ -47,14 +48,13 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 			res$audited.over.value <- res$sample.over.value + res$high.over.value
 			res$audited.under.value <- res$sample.under.value + res$high.under.value
 		} else {
-			population.value <- x$book.value
+			#population.value <- x$book.value
 			res$high.book.value <- 0
 			res$high.miss.qty <- 0
 			res$high.miss.value <- 0
 			res$audited.over.value <- res$sample.over.value
 			res$audited.under.value <- res$sample.under.value
 		}
-		x$high.miss.value <- res$high.miss.value
 		res$audited.miss.qty <- res$sample.miss.qty + res$high.miss.qty
 		res$audited.miss.value <- res$sample.miss.value + res$high.miss.value
 		res$audited.book.value <- res$sample.book.value + res$high.book.value
@@ -77,8 +77,13 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 		res$MLE.highrate.rate <- .percent(res$MLE.highrate.value / population.value)
 		res$MLE.final.value <- x$MLE.final
 		res$MLE.final.rate <- .percent(res$MLE.final.value / population.value)
+		res$MLE.observed.value <- res$audited.miss.value
+		res$MLE.observed.rate <- .percent(res$MLE.observed.value / population.value)
+		res$MLE.estimated.value <- res$MLE.final.value - res$MLE.observed.value
+		res$MLE.estimated.rate <- .percent(res$MLE.estimated.value / population.value)
+		res$MLE.projection.rate <- .percent((res$MLE.final.value - res$audited.miss.value) / (population.value - res$audited.book.value))
 
-		tbl <- matrix(nrow=9, ncol=4)
+		tbl <- matrix(nrow=12, ncol=4)
 		tbl[1,] = c(gettext("Audited Misstatements", domain=dm), res$audited.miss.qty , .value(res$audited.miss.value), res$audited.miss.rate)
 		tbl[2,] = c(gettext("Audited Overstatements", domain=dm), res$audited.over.qty , .value(res$audited.over.value), res$audited.over.rate)
 		tbl[3,] = c(gettext("Audited Understatements", domain=dm), res$audited.under.qty , .value(res$audited.under.value), res$audited.under.rate)
@@ -93,6 +98,10 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 		}
 #		tbl[9,] = c(gettext("Most Likely Error", domain=dm), "-" , .value(res$most.likely.error.value), res$most.likely.error.rate)
 		tbl[9,] = c(gettext("Most Likely Error", domain=dm), "-" , .value(res$MLE.final.value), res$MLE.final.rate)
+		tbl[10,] = c(gettext("MLE (Observed)", domain=dm), "-" , .value(res$MLE.observed.value), res$MLE.observed.rate)
+		tbl[11,] = c(gettext("MLE (Projected)", domain=dm), "-" , .value(res$MLE.estimated.value), res$MLE.estimated.rate)
+		tbl[12,] = c(gettext("MLE (Projection Rate)", domain=dm), "-" , "-", res$MLE.projection.rate)
+
 #		tbl[10,] = c(gettext("MLE (Low Error Rate)", domain=dm), "-" , .value(res$MLE.lowrate.value), res$MLE.lowrate.rate)
 #		tbl[11,] = c(gettext("MLE (High Error Rate)", domain=dm), "-" , .value(res$MLE.highrate.value), res$MLE.highrate.rate)
 #		tbl[2,] <- Vectorize(.italic)(tbl[2,])
@@ -225,8 +234,10 @@ print.MUS.evaluation.result <- function(x, error.rate="auto",
 }
 
 .write.UEL <- function(x, y, digits=2, format="f", ...) {
-	population.value <- x$book.value - ifelse(is.data.frame(x$filled.high.values), sum(x$filled.high.values[,x$col.name.book.values]), 0)
-	ifelse(x$error.as.pct, paste0(formatC(100 * (y - x$high.miss.value) / population.value, format=format, digits=digits, ...), "%"), y)
+	#high.miss.value = x$Results.High.values$Net.Value.of.Errors
+	#population.value <- x$book.value - ifelse(is.data.frame(x$filled.high.values), sum(x$filled.high.values[,x$col.name.book.values]), 0)
+	population.value <- x$book.value
+	ifelse(x$error.as.pct, paste0(formatC(100 * y / population.value, format=format, digits=digits, ...), "%"), y)
 }
 
 .percent <- function(x, digits = 2, format = "f", ...) {

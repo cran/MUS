@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: MUS 0.1.5\n"
 "Report-Msgid-Bugs-To: https://github.com/alsguimaraes/MUS\n"
 "POT-Creation-Date: 2017-10-20 15:22\n"
-"PO-Revision-Date: 2017-10-20 19:44-0200\n"
+"PO-Revision-Date: 2017-11-17 19:07-0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -351,3 +351,12 @@ msgstr "estratos"
 
 msgid "Stratum"
 msgstr "Estrato"
+
+msgid "MLE (Observed)"
+msgstr "EMP (Observado)"
+
+msgid "MLE (Projected)"
+msgstr "EMP (Projetado)"
+
+msgid "MLE (Projection Rate)"
+msgstr "EMP (Pct. Projeção)"

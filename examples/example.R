@@ -222,9 +222,12 @@ for (s in strata) {
       cat("\n")
       resultados[s] <- evaluation[[s]]$acceptable
       mle <- evaluation[[s]]$MLE.final
-      errohighvalues <- evaluation[[s]]$high.miss.value
-      tot <- evaluation[[s]]$book.value - ifelse(is.data.frame(evaluation[[s]]$filled.high.values), sum(evaluation[[s]]$filled.high.values$book.value), 0)
-      erro.provavel[s] <- (mle - errohighvalues) / tot
+#      errohighvalues <- evaluation[[s]]$Results.High.values$Net.Value.of.Errors
+      erroLiquidoAmostra <- evaluation[[s]]$Results.Sample$Gross.Value.of.Errors[1] - evaluation[[s]]$Results.Sample$Gross.Value.of.Errors[2]
+      erroLiquidoHighValues <- evaluation[[s]]$Results.High.values$Gross.Value.of.Errors[1] - evaluation[[s]]$Results.High.values$Gross.Value.of.Errors[2]
+      erroTotal <- erroLiquidoAmostra + erroLiquidoHighValues
+      parcial <- evaluation[[s]]$book.value - sum(audited[[s]]$book.value) - ifelse(is.data.frame(evaluation[[s]]$filled.high.values), sum(evaluation[[s]]$filled.high.values$book.value), 0)
+      erro.provavel[s] <- (mle - erroTotal) / parcial
     }
 
     if (MUS.step > 3) {
