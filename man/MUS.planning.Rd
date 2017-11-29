@@ -11,7 +11,7 @@
 }
 \usage{
 MUS.planning(data, col.name.book.values, confidence.level,
-tolerable.error, expected.error, n.min)
+tolerable.error, expected.error, n.min, errors.as.pct, conservative, combined)
 }
 \arguments{
   \item{data}{A data frame or matrix which contains at least one column
@@ -25,6 +25,10 @@ tolerable.error, expected.error, n.min)
   \item{expected.error}{The expected error which is contained in the
     population in Monetary Units.}
   \item{n.min}{Minimum sample size that should be used. Default is 0.}
+  \item{errors.as.pct}{Boolean. Tolerable and Expected error informed as percentages. Default is False.}
+  \item{conservative}{Boolean. If true, use greater sample size between normal calculation and
+     conservative algorithm (i.e., gamma-based, AICPA compatible).}
+  \item{combined}{Boolean. Marks the dataset as a combination of multiple strata. Default is "FALSE".}
 }
 \value{
   An object MUS.planning.result is returned which is a list containing
@@ -41,14 +45,14 @@ tolerable.error, expected.error, n.min)
     which is greater or egal than the provided minimum sample size.}
   \item{High.value.threshold}{Whenever a book value of an element is above the
   threshold, the element will be considered individually
-  significant. Individual significant items will be audited completely, 
-  no sample extrapolation will be necessary.} 
+  significant. Individual significant items will be audited completely,
+  no sample extrapolation will be necessary.}
   \item{tolerable.taintings}{The number of taintings in the sample that will be
     acceptable at maximum.}
 }
 \author{Henning Prömpers <henning@proempers.net>}
 \seealso{
-  \code{\link{MUS.extraction}} for extraction of the planned sample and 
+  \code{\link{MUS.extraction}} for extraction of the planned sample and
   \code{\link{MUS.evaluation}} for evaluation of the extracted and
   audited sample.
 }

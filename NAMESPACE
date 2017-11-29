@@ -1,3 +1,5 @@
 exportPattern("^[[:alpha:]]+")
-importFrom("stats", "phyper", "runif", "uniroot")
+importFrom("stats", "phyper", "runif", "uniroot", "aggregate", "qgamma", "qnorm", "qt", "sd")
 S3method(print, MUS.evaluation.result)
+S3method(print, MUS.planning.result)
+S3method(print, MUS.extraction.result)

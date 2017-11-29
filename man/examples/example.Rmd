@@ -1,0 +1,42 @@
+---
+#title: "MUS"
+#author: "Andre Guimaraes"
+#date: "25/08/2017"
+
+header-includes:
+    - \usepackage{helvet}
+    - \usepackage[T1]{fontenc}
+    - \usepackage{fancyhdr}
+    - \usepackage{lastpage}
+    - \renewcommand\familydefault{\sfdefault}
+
+output:
+  pdf_document:
+  latex_engine: xelatex
+  toc: true
+  toc_depth: 1
+
+mainfont: helvetica
+fontsize: 12pt
+
+geometry:
+  - tmargin=2cm
+  - bmargin=3cm
+  - lmargin=2cm
+  - rmargin=2cm
+
+documentclass: article
+classoption: a4paper
+---
+\pagestyle{fancyplain}
+\addtolength{\headheight}{\baselineskip}
+\lhead{\includegraphics[height=0.8cm]{logo.png}}
+\rhead{\fontsize{8}{10}\selectfont \textit{P\'agina}\\\fontsize{10}{12}\selectfont \smallskip\textbf{\thepage} de \textbf{\pageref*{LastPage}}}
+\lfoot{\fontsize{8}{10}\selectfont \textit{Grau de Sigilo}\\\smallskip\textbf{Controlado - sigilo empresarial}}
+\cfoot{\fontsize{8}{10}\selectfont \textit{Restri\c{c}\~ao de Acesso}\\\smallskip\textbf{Empresas do Sistema BNDES}}
+\rfoot{\fontsize{8}{10}\selectfont \textit{Unidade Gestora}\\\smallskip\textbf{ATI}}
+\renewcommand{\headrulewidth}{0pt}
+
+```{r echo=FALSE, warning=FALSE, title=FALSE, comment='', results='asis', fig.show='asis', fig.height=3.2, fig.width=3.4, out.width=".49\\linewidth"}
+source("example.R")
+```

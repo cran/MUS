@@ -11,7 +11,9 @@
 }
 \usage{
 MUS.evaluation(extract, filled.sample, filled.high.values,
-col.name.audit.values, col.name.riskweights)
+col.name.audit.values, col.name.riskweights,
+interval.type, print.advice, tainting.order,
+experimental, combined)
 }
 \arguments{
   \item{extract}{A MUS.extraction.result object that you got by executing the
@@ -29,6 +31,11 @@ col.name.audit.values, col.name.riskweights)
     column containing the risk weights in filled.sample respectively
     filled.high.values. Default is NULL, then no risk weights are
     included in the calcualations (the ordinary MUS case).}
+  \item{interval.type}{Interval type for high error rate evaluation. Default is "one-sided".}
+  \item{print.advice}{Boolean. Prints recommendations only if TRUE. Default is "TRUE".}
+  \item{tainting.order}{Calculates UEL with different tainting orders (increasing, absolute, random). Default is "decreasing".}
+  \item{experimental}{Boolean. Calculates other bounds, such as momentum, binomial, multinomial. Not ready for production. Default is "FALSE".}
+  \item{combined}{Boolean. Marks the dataset as a combination of multiple strata. Default is "FALSE".}
 }
 \value{
   An object MUS.evaluation.result is returned which is a list containing
