@@ -1,4 +1,10 @@
-6c00bf756d50aca5ebee41f5b13ffcdd *DESCRIPTION
+a5cc879bbbde2779963efd937f75589b *build/partial.rdb
+090cc5f8d5d57b6f24cc34c5b32f0770 *DESCRIPTION
+5f9db751af196e6747c5fd418b66583b *examples/data.csv
+da533b2e22782e7c14d31387afb1bd4d *examples/example.R
+bd1409a941923f8e6e9a83db107ea854 *examples/example.Rmd
+49c905092eb5ae1fc00206fcdf7ac445 *examples/logo.png
+2553531635d707000aa31253b5f274ef *examples/workflow.R
 32631548c047c541ee897b741ad2953e *inst/po/en@quot/LC_MESSAGES/R-MUS.mo
 31f2543e08e9774dfef16d32bf340954 *inst/po/pt_BR/LC_MESSAGES/R-MUS.mo
 b8d9689af48ca28fc3c4c470e293c1c6 *man/MUS-package.Rd
@@ -16,6 +22,7 @@ be4052a145e687017fca8029da1c7ab4 *man/MUS.evaluation.Rd
 c7e85c735e646069ec888201aaf083b1 *man/print.MUS.evaluation.result.Rd
 4e1716e1ea1a4f37d589ec334a6b543b *man/print.MUS.extraction.result.Rd
 d0f925ae487b32a55e2487062eef2fb7 *man/print.MUS.planning.result.Rd
+3eaf5c4b911376c725d8f82bc3a467fd *MD5
 1faebf3391ec44409007b4658382bfe9 *NAMESPACE
 8e6549ce43e86d56f79f71b83d51f1b8 *po/R-MUS.pot
 31f2543e08e9774dfef16d32bf340954 *po/R-pt_BR.mo
@@ -23,10 +30,10 @@ a0de8307b4c2e8554329170c9c4c015f *po/R-pt_BR.po
 177c1abba09291d8b502a473533589b4 *R/MUS.bounds.R
 4108a5e86888565eb8245a56e9cc006d *R/MUS.combine.R
 b2a016cc212874e2af2cfce533b8415d *R/MUS.evaluation.R
-86ec00c293067d53a5b6e02e104e212a *R/MUS.extend.R
+fc7cb0cc8a3a1588c265d7fdb21b964c *R/MUS.extend.R
 6d3e017a312482d5a3ff2b04c5ba756c *R/MUS.extraction.R
 4dc4fbe433b00f716754b6910440b5ea *R/MUS.planning.R
 11a67054d6fa4ad2eea4099c74404b71 *R/print.MUS.evaluation.result.R
 7758ec42e5ebb60844c92cd8fae4bde5 *R/print.MUS.extraction.result.R
 b1214e49ec92ade404dcc845373be121 *R/print.MUS.planning.result.R
-aa8742efc973459d608464a70e187e4c *README.md
+42daef4e6a76933a0ac4ebecf31fd3fc *README.md

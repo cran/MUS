@@ -16,6 +16,7 @@ Contributions are most welcome.
 ## Authors
 
 * **Henning Prömpers** - *Initial work*
+* **Andre Guimaraes** 
 
 See also the list of [contributors](https://github.com/alsguimaraes/MUS/contributors) who participated in this project.
 

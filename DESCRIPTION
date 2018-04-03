@@ -3,7 +3,7 @@ Package: MUS
 Type: Package
 Title: Monetary Unit Sampling and Estimation Methods, Widely Used in
         Auditing
-Version: 0.1.5
+Version: 0.1.6
 Date: 2017-09-15
 Author: Henning Prömpers, André Guimarães
 Maintainer: Henning Prömpers <henning@proempers.net>
