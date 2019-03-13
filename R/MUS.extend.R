@@ -1,17 +1,19 @@
 
-MUS.extend <- function(extract, additional.n, new_plan=NULL){
+MUS.extend <- function(extract, new_plan=NULL, additional.n=NULL) {
 	if (class(extract)!="MUS.extraction.result") stop("extract has to be an object from type MUS.extraction.result. Use function MUS.extraction to create such an object.")
-	if (additional.n < 1) {
-		extract$additional.sample <- extract$sample[FALSE, ]
-		return(extract)
-	}
-	total.n <- (additional.n + extract$n)
-	extract$n <- total.n
-	colunas <- colnames(extract$sample.population)
-	sample.cols <- colnames(extract$sample)
-
+	if (class(new_plan)!="MUS.planning.result" && !is.null(new_plan)) stop("new_plan has to be an object from type MUS.planning.result. Use function MUS.planning to create such an
+ object or NULL.")
+	if (class(additional.n)!="numeric" && !is.null(additional.n)) stop("additional.n must be numeric or NULL.")
 	# rebuild plan from extract object
+ 	if (is.null(additional.n)) {
+		additional.n <- 0
+	}
+	
 	if (is.null(new_plan)) {
+		n.final = extract$n + additional.n
+		interval <- extract$book.value / n.final # calculate sampling interval
+		tol.taint <- extract$expected.error / extract$book.value * n.final # calculate tolerable taintings (maximal number of full overstatements that will be acceptable in the sample)
+
 		new_plan <- list(
 			data=extract$data, 
 			col.name.book.values=extract$col.name.book.values, 
@@ -19,12 +21,22 @@ MUS.extend <- function(extract, additional.n, new_plan=NULL){
 			tolerable.error=extract$tolerable.error, 
 			expected.error=extract$expected.error, 
 			book.value=extract$book.value, 
-			n=extract$n, 
-			High.value.threshold=extract$High.value.threshold, 
-			tolerable.taintings=extract$tolerable.taintings, 
+			n=n.final, 
+			High.value.threshold=interval, 
+			tolerable.taintings=tol.taint, 
 			combined=extract$combined)
 		class(new_plan) <- "MUS.planning.result"	
+	} else {
+	    additional.n <- new_plan$n - extract$n
 	}
+	if (additional.n < 1) {
+		extract$additional.sample <- extract$sample[FALSE, ]
+		return(extract)
+	}
+	total.n <- (additional.n + extract$n)
+	colunas <- colnames(extract$sample.population)
+	sample.cols <- colnames(extract$sample)
+
 	# split data into high values and population from which will be sampled
 	if (is.data.frame(extract$high.values)) {
 		old.high.values <- extract$high.values
@@ -37,7 +49,7 @@ MUS.extend <- function(extract, additional.n, new_plan=NULL){
     old.sample <- extract$sample
 	old.audited <- rbind(old.sample[, sample.cols], old.high.values[, sample.cols])
 	# create a brand new sample with the new n
-	new_extract <- MUS.extraction(new_plan, extract$start.point, extract$seed, extract$obey.n.as.min, extract$combined)	
+	new_extract <- MUS.extraction(new_plan, start.point=NULL, extract$seed, extract$obey.n.as.min, extract$combined)	
 	if (is.data.frame(new_extract$high.values)) {
 		new.high.values <- new_extract$high.values
 	} else {
@@ -53,8 +65,15 @@ MUS.extend <- function(extract, additional.n, new_plan=NULL){
 	# final sample is original sample+high.values that are not on the new high.values
 	# extended by randomly selected elements from the new sample
 	# this allows us to reuse the extraction method as is
-	adding <- sample(new.basedraw, new.n - length(selected))
-	final.sample <- c(selected, adding)
+	newSize <- pmax(0, new.n - length(selected))
+	if (newSize > 0) {
+			adding <- sample(new.basedraw, newSize)
+			final.sample <- c(selected, adding)
+	} else {
+			final.sample <- c(selected)
+			adding <- c()
+	}	
+
 	if(!"MUS.total" %in% colnames(new_extract$sample.population)) {
 		new_extract$sample.population$MUS.total <- rep(0, nrow(new_extract$sample.population))
 	}

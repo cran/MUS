@@ -9,11 +9,12 @@
   Please treat as experimental.
 }
 \usage{
-  MUS.extend(extract, additional.n)
+  MUS.extend(extract, new_plan=NULL, additional.n=NULL)
 }
 \arguments{
   \item{extract}{An object of the type MUS.extraction.result to be extended.}
-  \item{additional.n}{Extend the sample by additional.n items.}
+  \item{new_plan}{Provide a new MUS plan. If null, you must provide the qty of items to extend the sample.}
+  \item{additional.n}{Ignored if new_plan is provided, otherwise sample will be extended by additional.n items}
 }
 \value{
   Returns an extended MUS.extraction.result object.
@@ -22,19 +23,28 @@
 \examples{
 
 ## Simple Example
-# Assume 500 invoices, each between 1 and 1000 monetary units
-example.data.1 <- data.frame(book.value=round(runif(n=500, min=1,
-max=1000)))
+# Assume 500 invoices
+mydata <- data.frame(book.value=
+  round(c(runif(n=480, min=10,max=20000),
+  runif(n=20, min=15000,max=50000)))
+)
 
 # Plan a sample and cache it
-plan.results.simple <- MUS.planning(data=example.data.1,
-tolerable.error=100000, expected.error=20000)
+plan <- MUS.planning(data=mydata,
+tolerable.error=50000, expected.error=3000)
 
 # Extract a sample and cache it
-extract1 <- MUS.extraction(plan.results.simple)
+extract <- MUS.extraction(plan, obey.n.as.min=TRUE)
 
-# extends the sample by 20 itens
-extract2 <- MUS.extend(extract1, 20)
+# Create a new plan
+new_plan <- MUS.planning(data=mydata,
+tolerable.error=50000, expected.error=5000)
+
+# extends the sample using the new plan
+extended <- MUS.extend(extract, new_plan)
+
+# extends the sample by 20 itens using the original plan
+extended20 <- MUS.extend(extract, additional.n=20)
 
 }
 \keyword{MUS}

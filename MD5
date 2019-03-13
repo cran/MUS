@@ -1,5 +1,5 @@
 a5cc879bbbde2779963efd937f75589b *build/partial.rdb
-090cc5f8d5d57b6f24cc34c5b32f0770 *DESCRIPTION
+5f0bc17891b9e08231936ee3590e79ac *DESCRIPTION
 5f9db751af196e6747c5fd418b66583b *examples/data.csv
 da533b2e22782e7c14d31387afb1bd4d *examples/example.R
 bd1409a941923f8e6e9a83db107ea854 *examples/example.Rmd
@@ -13,7 +13,7 @@ f01f9da0bce2624bff8da2d4696745d4 *man/MUS.calc.n.conservative.Rd
 eeef03ed9e4cb2fbb6cec4bfeea7a3a1 *man/MUS.combine.Rd
 f7d247df7d06a60fda55dd180738419e *man/MUS.combined.high.error.rate.Rd
 be4052a145e687017fca8029da1c7ab4 *man/MUS.evaluation.Rd
-68632777c1af18e1fc84b7bcfedca7e9 *man/MUS.extend.Rd
+2330e71495709ce7a90a2d5461fb8851 *man/MUS.extend.Rd
 7f2320966a4f6827ccaa61dbf8139ed8 *man/MUS.extraction.Rd
 292c6ed68ffd431f5c12c62be370ab3b *man/MUS.factor.Rd
 3c08c4957450564943a3efc8ff29d955 *man/MUS.moment.bound.Rd
@@ -22,7 +22,6 @@ be4052a145e687017fca8029da1c7ab4 *man/MUS.evaluation.Rd
 c7e85c735e646069ec888201aaf083b1 *man/print.MUS.evaluation.result.Rd
 4e1716e1ea1a4f37d589ec334a6b543b *man/print.MUS.extraction.result.Rd
 d0f925ae487b32a55e2487062eef2fb7 *man/print.MUS.planning.result.Rd
-3eaf5c4b911376c725d8f82bc3a467fd *MD5
 1faebf3391ec44409007b4658382bfe9 *NAMESPACE
 8e6549ce43e86d56f79f71b83d51f1b8 *po/R-MUS.pot
 31f2543e08e9774dfef16d32bf340954 *po/R-pt_BR.mo
@@ -30,7 +29,7 @@ a0de8307b4c2e8554329170c9c4c015f *po/R-pt_BR.po
 177c1abba09291d8b502a473533589b4 *R/MUS.bounds.R
 4108a5e86888565eb8245a56e9cc006d *R/MUS.combine.R
 b2a016cc212874e2af2cfce533b8415d *R/MUS.evaluation.R
-fc7cb0cc8a3a1588c265d7fdb21b964c *R/MUS.extend.R
+5b34a0c94786bb478ae075f297ae97f2 *R/MUS.extend.R
 6d3e017a312482d5a3ff2b04c5ba756c *R/MUS.extraction.R
 4dc4fbe433b00f716754b6910440b5ea *R/MUS.planning.R
 11a67054d6fa4ad2eea4099c74404b71 *R/print.MUS.evaluation.result.R
