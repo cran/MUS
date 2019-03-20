@@ -1,57 +1,91 @@
 
-MUS.extend <- function(extract, additional.n){
+MUS.extend <- function(extract, new_plan=NULL, additional.n=NULL) {
 	if (class(extract)!="MUS.extraction.result") stop("extract has to be an object from type MUS.extraction.result. Use function MUS.extraction to create such an object.")
+	if (class(new_plan)!="MUS.planning.result" && !is.null(new_plan)) stop("new_plan has to be an object from type MUS.planning.result. Use function MUS.planning to create such an
+ object or NULL.")
+	if (class(additional.n)!="numeric" && !is.null(additional.n)) stop("additional.n must be numeric or NULL.")
+	# rebuild plan from extract object
+ 	if (is.null(additional.n)) {
+		additional.n <- 0
+	}
+	
+	if (is.null(new_plan)) {
+		n.final = extract$n + additional.n
+		interval <- extract$book.value / n.final # calculate sampling interval
+		tol.taint <- extract$expected.error / extract$book.value * n.final # calculate tolerable taintings (maximal number of full overstatements that will be acceptable in the sample)
+
+		new_plan <- list(
+			data=extract$data, 
+			col.name.book.values=extract$col.name.book.values, 
+			confidence.level=extract$confidence.level, 
+			tolerable.error=extract$tolerable.error, 
+			expected.error=extract$expected.error, 
+			book.value=extract$book.value, 
+			n=n.final, 
+			High.value.threshold=interval, 
+			tolerable.taintings=tol.taint, 
+			combined=extract$combined)
+		class(new_plan) <- "MUS.planning.result"	
+	} else {
+	    additional.n <- new_plan$n - extract$n
+	}
 	if (additional.n < 1) {
 		extract$additional.sample <- extract$sample[FALSE, ]
 		return(extract)
 	}
-	seed <- extract$seed
-	obey.n.as.min <- extract$obey.n.as.min
-	start.point <- extract$start.point
-	# set seed according to user input
-	if (!is.null(seed)) set.seed(seed)
-	interval <- extract$sampling.interval
+	total.n <- (additional.n + extract$n)
+	colunas <- colnames(extract$sample.population)
+	sample.cols <- colnames(extract$sample)
 
 	# split data into high values and population from which will be sampled
-	high.values <- extract$high.values
-	sample.population <- extract$sample.population
-    sample <- extract$sample
-    remaining <- (! rownames(sample.population) %in% rownames(sample))
-    sample.population <- sample.population[remaining, ]
-
-	if (obey.n.as.min) {
-		# calculate and replace interval by perfect sampling interval (if high value threshold is used, there might be less samples drawn than specified - cannot happen with perfect sampling interval)
-		interval <- sum(sample.population[,extract$col.name.book.values])/additional.n
-		oldinterval <- interval-1
-		# If the interval is not equal to the old interval, there might be other items with book value between old and new interval. Move them to high interval and recalculate interval.
-		while(oldinterval!=interval){
-			sample.population <- subset(sample.population, with(sample.population, get(extract$col.name.book.values))<interval)
-			oldinterval <- interval
-			interval <- sum(sample.population[,extract$col.name.book.values])/additional.n
-		}
+	if (is.data.frame(extract$high.values)) {
+		old.high.values <- extract$high.values
+	} else {
+		old.high.values <- extract$sample.population[FALSE, ]
 	}
+	old.high.values$MUS.total <- rep(0, nrow(old.high.values))
+	old.high.values$MUS.hit <- rep(0, nrow(old.high.values))
+	# old.sample.population <- extract$sample.population
+    old.sample <- extract$sample
+	old.audited <- rbind(old.sample[, sample.cols], old.high.values[, sample.cols])
+	# create a brand new sample with the new n
+	new_extract <- MUS.extraction(new_plan, start.point=NULL, extract$seed, extract$obey.n.as.min, extract$combined)	
+	if (is.data.frame(new_extract$high.values)) {
+		new.high.values <- new_extract$high.values
+	} else {
+		new.high.values <- new_extract$sample.population[FALSE, ]
+	}
+	new.high.values$MUS.total <- rep(0, nrow(new.high.values))
+	new.high.values$MUS.hit <- rep(0, nrow(new.high.values))
 
-	# fixed interval selection method
-	# if no start point is provided, set a random one
-	if (is.null(start.point)) start.point <- runif(n=1, min=0, max=interval)
+	new.sample <- rownames(new_extract$sample)
+	new.n <- length(new.sample)
+	selected <- rownames(old.audited)[!rownames(old.audited) %in% rownames(new.high.values)]
+	new.basedraw <- new.sample[!new.sample %in% selected]
+	# final sample is original sample+high.values that are not on the new high.values
+	# extended by randomly selected elements from the new sample
+	# this allows us to reuse the extraction method as is
+	newSize <- pmax(0, new.n - length(selected))
+	if (newSize > 0) {
+			adding <- sample(new.basedraw, newSize)
+			final.sample <- c(selected, adding)
+	} else {
+			final.sample <- c(selected)
+			adding <- c()
+	}	
 
-	# calculate the units to be sampled, one in each interval
-	samplingunits <- round(start.point+0:(additional.n)*round(interval, digits=2))
-
-	# cut samplingunits if they are above the maximum book value
-	samplingunits <- subset(samplingunits, samplingunits<=sum(sample.population[, extract$col.name.book.values]))
-
-	# draw sample and add MUS.hit
-	extract$additional.sample <- sample.population[findInterval(samplingunits, c(0,sample.population$MUS.total)),]
-	extract$additional.sample$MUS.hit <- samplingunits
-
-	extract$sample <- rbind(extract$sample, extract$additional.sample)
-
+	if(!"MUS.total" %in% colnames(new_extract$sample.population)) {
+		new_extract$sample.population$MUS.total <- rep(0, nrow(new_extract$sample.population))
+	}
+	if(!"MUS.hit" %in% colnames(new_extract$sample.population )) {
+		new_extract$sample.population$MUS.hit <- rep(0, nrow(new_extract$sample.population))
+	}
+	new_extract$sample <- new_extract$sample.population[rownames(new_extract$sample.population) %in% final.sample, sample.cols]
+	new_extract$sample.population <- new_extract$sample.population[, colunas]
 	# calculate revised sampling interval (used for evaluation of the sample population)
-	extract$interval <- sum(extract$sample.population[,extract$col.name.book.values])/nrow(extract$sample)
-	extract$extensions <- extract$extensions + 1
-	extract$n.qty <- c(extract$n.qty, additional.n)
+	new_extract$interval <- sum(new_extract$sample.population[,new_extract$col.name.book.values])/nrow(new_extract$sample)
+	new_extract$extensions <- extract$extensions + 1
+	new_extract$n.qty <- c(extract$n.qty, additional.n)
 	# return all results, parameters and planning object as list for further processing
-
-	return(extract)
+	return(new_extract)
 }

@@ -51,7 +51,7 @@ MUS.calc.n.conservative <- function(confidence.level, tolerable.error, expected.
 # calculate n consevatively, as per AICPA audit guide
   pct.ratio = expected.error / tolerable.error
   conf.factor = ceiling(MUS.factor(confidence.level, pct.ratio)*100)/100
-  ceiling(conf.factor / tolerable.error / book.value)
+  ceiling(conf.factor / tolerable.error * book.value)
 }
 
 MUS.planning <- function(data, col.name.book.values="book.value", confidence.level=.95, tolerable.error, expected.error,
