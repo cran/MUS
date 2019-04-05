@@ -72,7 +72,7 @@ MUS.binomial.bound <- function(x, scope="qty", as.pct=FALSE, include.high.values
         bc <- DescTools::BinomCI(misstatement, book.value, conf.level=1-(1-confidence.level) * 2, method = "clopper-pearson")
         ifelse(as.pct, (bc[3] * mult), round(bc[3] * mult))
     } else {
-        NULL
+        stop("MUS.binomial.bound requires package DescTools.")
     }
 }
 
@@ -92,7 +92,7 @@ MUS.multinomial.bound <- function(x, as.pct=FALSE, include.high.values=TRUE) {
         mult <- ifelse(as.pct, 100, x$book.value)
         ifelse(as.pct, ((1-res[observed$value==0][2])) * mult, round(((1-res[observed$value==0][2])) * mult))
     } else {
-        NULL
+        stop("MUS.multinomial.bound requires package DescTools.")
     }
 }
 
