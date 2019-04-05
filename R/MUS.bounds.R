@@ -20,8 +20,8 @@ MUS.moment.bound <- function(x, confidence.level=0.95, as.pct=FALSE, include.hig
     N <- length(data)
 
     hypothetical.tainting = 0.81*(1-0.667*tanh(10*mean(taintings)))*(1+0.667*tanh(n/10))
-    TN <- sapply(1:3, function(j) (hypothetical.tainting^j+sum(taintings^j))/5)
-    RN <- c( (1+n)/(2+N), (1+n)/(2+N)*(2+n)/(3+N), (1+n)/(2+N)*(2+n)/(3+N)*(3+n)/(4+N) )
+    TN <- sapply(1:3, function(j) (hypothetical.tainting^j+sum(taintings^j))/(n+1))
+    RN <- c( ((1+n)/(2+N)), ((1+n)/(2+N)) * ((2+n)/(3+N)), ((1+n)/(2+N)) * ((2+n)/(3+N)) * ((3+n)/(4+N)) )
     UN <- c(  RN[1]*TN[1], (RN[1]*TN[2] + (N-1)*RN[2]*TN[1]^2)/N, ( RN[1]*TN[3] + 3*(N-1)*RN[2]*TN[1]*TN[2] + (N-1)*(N-2)*RN[3]*TN[1]^3)/N^2 )
     UC <- c( 0, UN[2]-UN[1]^2, UN[3]-3*UN[1]*UN[2]+2*UN[1]^3 )
 
